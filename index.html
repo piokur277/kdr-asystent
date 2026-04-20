@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KDR Voice Assist | Modułowy RAG</title>
+    <title>KDR Voice Assist | Manual Reset</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-ring {
@@ -24,6 +24,7 @@
             border: 1px solid #22c55e;
             color: #4ade80;
         }
+        .hidden-element { display: none !important; }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen flex flex-col justify-between p-4 md:p-8 select-none overflow-hidden">
@@ -31,7 +32,7 @@
     <header class="flex justify-between items-center border-b border-gray-800 pb-4">
         <div>
             <h1 class="text-3xl font-black tracking-widest text-red-600 uppercase">KDR System</h1>
-            <p class="text-xs text-gray-500 font-mono mt-1">TRYB: DYNAMICZNA BAZA PROCEDUR (JSON)</p>
+            <p class="text-xs text-gray-500 font-mono mt-1">TRYB: MANUALNE POTWIERDZENIE (SAFETY)</p>
         </div>
         <div id="status-indicator" class="text-sm font-bold bg-gray-900 px-4 py-2 border border-gray-700 rounded uppercase text-gray-400">
             Inicjalizacja...
@@ -39,16 +40,13 @@
     </header>
 
     <main class="flex-grow flex flex-col justify-center items-center py-6 w-full max-w-5xl mx-auto">
-        
         <p id="user-input-display" class="text-xl md:text-2xl text-gray-500 mb-4 text-center italic min-h-[40px] font-mono">
-            Ładowanie modułów pamięci...
+            Ładowanie...
         </p>
         
-        <div id="source-indicator" class="hidden text-sm md:text-base font-bold px-4 py-2 rounded mb-6 source-badge uppercase tracking-wider">
-            </div>
+        <div id="source-indicator" class="hidden-element text-sm md:text-base font-bold px-4 py-2 rounded mb-6 source-badge uppercase tracking-wider"></div>
 
-        <div id="procedure-output" class="text-2xl md:text-5xl font-black leading-tight text-center text-white break-words w-full">
-            </div>
+        <div id="procedure-output" class="text-2xl md:text-5xl font-black leading-tight text-center text-white break-words w-full"></div>
     </main>
 
     <footer class="flex justify-center pb-4">
@@ -58,14 +56,18 @@
             </svg>
             <span>Rozkaz</span>
         </button>
+
+        <button id="reset-btn" class="hidden-element w-48 h-48 md:w-56 md:h-56 rounded-full border-4 border-yellow-500 text-yellow-500 font-bold text-2xl uppercase transition-all duration-200 active:scale-95 flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-2xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Gotowy</span>
+        </button>
     </footer>
 
     <script>
-        // Dynamiczna tablica na wczytane procedury
         let knowledgeBaseDocuments = [];
-
-        // Lista plików JSON do załadowania (KDR zarządza tymi plikami w folderze /procedury na GitHubie)
-       const filesToLoad = [
+        const filesToLoad = [
             'procedury/wypadek-ev.json',
             'procedury/pozar-ev.json',
             'procedury/zatopienie-ev.json',
@@ -73,90 +75,40 @@
             'procedury/wypadek-masowy.json'
         ];
 
-        // Referencje UI
         const micBtn = document.getElementById('mic-btn');
+        const resetBtn = document.getElementById('reset-btn');
         const statusIndicator = document.getElementById('status-indicator');
         const userInputDisplay = document.getElementById('user-input-display');
         const procedureOutput = document.getElementById('procedure-output');
         const sourceIndicator = document.getElementById('source-indicator');
 
-        // Globalne obiekty Speech API
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const synth = window.speechSynthesis;
 
-        // 1. Faza: Pobieranie bazy wiedzy (Plików JSON)
         async function loadProcedures() {
-            statusIndicator.innerText = 'Pobieranie bazy...';
-            statusIndicator.classList.replace('text-gray-400', 'text-yellow-500');
-
+            statusIndicator.innerText = 'Pobieranie...';
             for (const file of filesToLoad) {
                 try {
-                    // Dodajemy znacznik czasu (cache-bust), aby GitHub Pages nie trzymało starej wersji pliku w pamięci
                     const response = await fetch(`${file}?v=${new Date().getTime()}`);
-                    if (!response.ok) {
-                        throw new Error(`Błąd HTTP: ${response.status}`);
-                    }
                     const data = await response.json();
                     knowledgeBaseDocuments.push(data);
-                    console.log(`[KDR System] Pomyślnie załadowano: ${file}`);
-                } catch (error) {
-                    console.warn(`[KDR System] Brak lub błąd w pliku ${file}. Przyczyna:`, error);
-                }
+                } catch (e) { console.error("Błąd pliku:", file); }
             }
-
-            // Weryfikacja czy cokolwiek się załadowało
-            if (knowledgeBaseDocuments.length === 0) {
-                procedureOutput.innerHTML = '<span class="text-red-500">BŁĄD: Nie załadowano żadnych procedur. Sprawdź folder /procedury/ i upewnij się, że pliki JSON istnieją.</span>';
-                statusIndicator.innerText = 'Brak Danych';
-                statusIndicator.classList.replace('text-yellow-500', 'text-red-500');
-                userInputDisplay.innerText = 'System zablokowany.';
-            } else {
-                statusIndicator.innerText = 'Gotowy';
-                statusIndicator.classList.replace('text-yellow-500', 'text-gray-400');
-                userInputDisplay.innerText = 'Oczekuję na komendę...';
-                
-                // Odblokowanie przycisku
-                micBtn.disabled = false;
-                micBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
+            statusIndicator.innerText = 'Gotowy';
+            userInputDisplay.innerText = 'Oczekuję na komendę...';
+            micBtn.disabled = false;
+            micBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
 
-        // 2. Faza: Inicjalizacja asystenta głosowego po załadowaniu danych
         window.addEventListener('load', () => {
             loadProcedures().then(() => {
-                
-                // Sprawdzenie wsparcia przeglądarki
-                if (!SpeechRecognition) {
-                    procedureOutput.innerHTML = '<span class="text-red-500">BŁĄD: Przeglądarka nie obsługuje Web Speech API. Użyj Google Chrome.</span>';
-                    micBtn.disabled = true;
-                    micBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    return;
-                }
-
+                if (!SpeechRecognition) return;
                 const recognition = new SpeechRecognition();
                 recognition.lang = 'pl-PL';
-                recognition.interimResults = false;
-                recognition.maxAlternatives = 1;
 
-                // Zdarzenia rozpoznawania mowy
                 recognition.onstart = () => {
                     micBtn.classList.add('listening');
                     statusIndicator.innerText = 'Słucham...';
-                    statusIndicator.classList.replace('text-gray-400', 'text-red-500');
-                    userInputDisplay.innerText = '[ Wprowadzanie komendy... ]';
-                    sourceIndicator.classList.add('hidden');
-                    procedureOutput.innerHTML = '';
-                };
-
-                recognition.onspeechend = () => {
-                    recognition.stop();
-                    resetUI();
-                };
-
-                recognition.onerror = (event) => {
-                    resetUI();
-                    userInputDisplay.innerText = `[ Błąd transkrypcji: ${event.error} ]`;
-                    triggerErrorResponse("Błąd łączności. Powtórz rozkaz.");
                 };
 
                 recognition.onresult = (event) => {
@@ -165,66 +117,63 @@
                     executeStrictSearch(transcript);
                 };
 
-                // Logika Wyszukiwania w załadowanej bazie
+                recognition.onend = () => {
+                    micBtn.classList.remove('listening');
+                };
+
                 function executeStrictSearch(query) {
-                    let foundDocument = null;
-                    for (const doc of knowledgeBaseDocuments) {
-                        const match = doc.keywords.some(keyword => query.includes(keyword));
-                        if (match) {
-                            foundDocument = doc;
-                            break;
-                        }
-                    }
-
-                    if (foundDocument) {
-                        displayAndSpeakSuccess(foundDocument);
+                    let found = knowledgeBaseDocuments.find(doc => doc.keywords.some(k => query.includes(k)));
+                    if (found) {
+                        displayProcedure(found);
                     } else {
-                        triggerErrorResponse("Odmowa. Brak informacji we wskazanych dokumentach źródłowych.");
+                        procedureOutput.innerHTML = '<span class="text-red-500 uppercase">Odmowa. Brak danych.</span>';
+                        speak("Odmowa. Brak danych.");
+                        toggleButtons(false); // Pokaż przycisk powrotu nawet przy błędzie
                     }
                 }
 
-                function displayAndSpeakSuccess(doc) {
+                function displayProcedure(doc) {
                     sourceIndicator.innerText = `WERYFIKACJA: ${doc.id}`;
-                    sourceIndicator.classList.remove('hidden');
-                    
-                    const formattedContent = doc.content.replace(/(\d+\.)/g, '<span class="text-yellow-500">$1</span>').replace(/\n/g, '<br>');
-                    procedureOutput.innerHTML = `<span class="text-gray-400 text-2xl block mb-2">${doc.prefix}</span>${formattedContent}`;
-                    
-                    const fullTextToSpeak = `${doc.prefix} ${doc.content}`;
-                    speak(fullTextToSpeak);
+                    sourceIndicator.classList.remove('hidden-element');
+                    const formatted = doc.content.replace(/(\d+\.)/g, '<span class="text-yellow-500">$1</span>').replace(/\n/g, '<br>');
+                    procedureOutput.innerHTML = `<span class="text-gray-400 text-xl block mb-2">${doc.prefix}</span>${formatted}`;
+                    speak(`${doc.prefix} ${doc.content}`);
+                    toggleButtons(false); // Ukryj mikrofon, pokaż przycisk Gotowy
                 }
 
-                function triggerErrorResponse(errorMessage) {
-                    sourceIndicator.classList.add('hidden');
-                    procedureOutput.innerHTML = `<span class="text-red-600 block bg-red-900/20 p-4 border border-red-800 rounded">[!] ${errorMessage.toUpperCase()}</span>`;
-                    speak(errorMessage);
+                function toggleButtons(showMic) {
+                    if (showMic) {
+                        micBtn.classList.remove('hidden-element');
+                        resetBtn.classList.add('hidden-element');
+                        statusIndicator.innerText = 'Gotowy';
+                    } else {
+                        micBtn.classList.add('hidden-element');
+                        resetBtn.classList.remove('hidden-element');
+                        statusIndicator.innerText = 'Procedura aktywna';
+                    }
                 }
 
                 function speak(text) {
                     if (synth.speaking) synth.cancel();
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = 'pl-PL';
-                    utterance.rate = 1.1; 
-                    utterance.pitch = 0.9; 
-                    synth.speak(utterance);
+                    const utt = new SpeechSynthesisUtterance(text);
+                    utt.lang = 'pl-PL';
+                    synth.speak(utt);
                 }
 
-                function resetUI() {
-                    micBtn.classList.remove('listening');
-                    statusIndicator.innerText = 'Gotowy';
-                    statusIndicator.classList.replace('text-red-500', 'text-gray-400');
-                }
-
-                // Obsługa kliknięcia "Rozkaz"
+                // Obsługa przycisku mikrofonu
                 micBtn.addEventListener('click', () => {
-                    if (micBtn.classList.contains('listening')) {
-                        recognition.stop();
-                    } else {
-                        // Inicjalizacja silnika TTS na urządzeniach mobilnych
-                        const unlockTTS = new SpeechSynthesisUtterance('');
-                        synth.speak(unlockTTS);
-                        recognition.start();
-                    }
+                    const unlock = new SpeechSynthesisUtterance('');
+                    synth.speak(unlock);
+                    recognition.start();
+                });
+
+                // Obsługa przycisku powrotu
+                resetBtn.addEventListener('click', () => {
+                    if (synth.speaking) synth.cancel();
+                    procedureOutput.innerHTML = '';
+                    sourceIndicator.classList.add('hidden-element');
+                    userInputDisplay.innerText = 'Oczekuję na następny rozkaz...';
+                    toggleButtons(true);
                 });
             });
         });
