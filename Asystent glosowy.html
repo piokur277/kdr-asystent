@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDR Voice Assist | STRICT RAG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 30px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .listening {
+            animation: pulse-ring 1.5s infinite;
+            background-color: #ef4444; 
+            color: white;
+            border-color: #ef4444;
+        }
+        body::-webkit-scrollbar { display: none; }
+        .source-badge {
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #4ade80;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans h-screen flex flex-col justify-between p-4 md:p-8 select-none overflow-hidden">
+
+    <header class="flex justify-between items-center border-b border-gray-800 pb-4">
+        <div>
+            <h1 class="text-3xl font-black tracking-widest text-red-600 uppercase">KDR System</h1>
+            <p class="text-xs text-gray-500 font-mono mt-1">TRYB: RYGORYSTYCZNE WYSZUKIWANIE ŹRÓDŁOWE (RAG)</p>
+        </div>
+        <div id="status-indicator" class="text-sm font-bold bg-gray-900 px-4 py-2 border border-gray-700 rounded uppercase text-gray-400">
+            Gotowy
+        </div>
+    </header>
+
+    <main class="flex-grow flex flex-col justify-center items-center py-6 w-full max-w-5xl mx-auto">
+        
+        <p id="user-input-display" class="text-xl md:text-2xl text-gray-500 mb-4 text-center italic min-h-[40px] font-mono">
+            Oczekuję na komendę...
+        </p>
+        
+        <div id="source-indicator" class="hidden text-sm md:text-base font-bold px-4 py-2 rounded mb-6 source-badge uppercase tracking-wider">
+            </div>
+
+        <div id="procedure-output" class="text-2xl md:text-5xl font-black leading-tight text-center text-white break-words w-full">
+            </div>
+    </main>
+
+    <footer class="flex justify-center pb-4">
+        <button id="mic-btn" class="w-48 h-48 md:w-56 md:h-56 rounded-full border-4 border-gray-600 text-gray-300 font-bold text-2xl uppercase transition-all duration-200 active:scale-95 flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-2xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+            <span>Rozkaz</span>
+        </button>
+    </footer>
+
+    <script>
+        /* =====================================================================
+           [DO DEVÓW BACKENDOWYCH / INŻYNIERÓW AI]:
+           1. Zastąpcie lokalną tablicę 'knowledgeBaseDocuments' wywołaniem 
+              do wektorowej bazy danych (np. Pinecone, ChromaDB, Weaviate).
+           2. Flow backendowe:
+              User Voice -> Transkrypcja (Whisper API) -> Generowanie Embeddingu zapytania 
+              -> Wyszukiwanie podobieństw (Cosine Similarity) w bazie wektorowej procedur.
+           3. Zwrócony kontekst (Top-K documents) wstrzyknijcie do prompta systemowego LLM.
+           4. KRYTYCZNE: Skonfigurujcie model LLM (np. GPT-4o / Claude 3.5 Sonnet) 
+              z parametrem `temperature=0` (maksymalny determinizm).
+           5. Prompt systemowy musi zawierać klauzulę: "Odpowiadaj TYLKO w oparciu 
+              o dostarczony kontekst. Jeśli nie ma w nim odpowiedzi, zwróć słowo: [ODMOWA]".
+           ===================================================================== */
+
+        // Mockup Bazy Wiedzy RAG (Symulacja indeksów wektorowych)
+        const knowledgeBaseDocuments = [
+            {
+                id: "KSRG-2024-ZAL-03",
+                keywords: ["wypadek masowy", "wypadek", "triage", "segregacja", "mnoga"],
+                prefix: "Zgodnie z procedurą TRIAGE z dokumentu KSRG-2024.",
+                content: "1. Wyznacz strefy.\n2. Segreguj poszkodowanych (Czerwony, Żółty, Zielony, Czarny).\n3. Raportuj zapotrzebowanie na siły i środki."
+            },
+            {
+                id: "PROC-WEW-01",
+                keywords: ["pożar wewnętrzny", "rota", "pożar budynku"],
+                prefix: "Zgodnie z wytycznymi natarcia z dokumentu PROC-WEW-01.",
+                content: "1. Rota gotowa w pełnym zabezpieczeniu ODO.\n2. Linia nawodniona.\n3. Kontrola temperatury drzwi.\n4. Natarcie."
+            },
+            {
+                id: "CHEM-ZAL-08",
+                keywords: ["wyciek substancji", "wyciek chemiczny", "rozlewisko"],
+                prefix: "Zgodnie z instrukcją ratownictwa chemicznego CHEM-ZAL-08.",
+                content: "1. Wyznacz strefę zagrożenia i strefę bezpieczną.\n2. Zabezpiecz pobliskie studzienki kanalizacyjne.\n3. Rozpoznaj substancję (kod Kemlera).\n4. Zbuduj kurtynę wodną."
+            }
+        ];
+
+        // Inicjalizacja Web Speech API
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const synth = window.speechSynthesis;
+        
+        const micBtn = document.getElementById('mic-btn');
+        const statusIndicator = document.getElementById('status-indicator');
+        const userInputDisplay = document.getElementById('user-input-display');
+        const procedureOutput = document.getElementById('procedure-output');
+        const sourceIndicator = document.getElementById('source-indicator');
+
+        if (!SpeechRecognition) {
+            procedureOutput.innerHTML = '<span class="text-red-500">BŁĄD: Przeglądarka nie obsługuje Web Speech API. Użyj Google Chrome.</span>';
+            micBtn.disabled = true;
+        } else {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'pl-PL';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                micBtn.classList.add('listening');
+                statusIndicator.innerText = 'Słucham...';
+                statusIndicator.classList.replace('text-gray-400', 'text-red-500');
+                userInputDisplay.innerText = '[ Wprowadzanie komendy... ]';
+                sourceIndicator.classList.add('hidden');
+                procedureOutput.innerHTML = '';
+            };
+
+            recognition.onspeechend = () => {
+                recognition.stop();
+                resetUI();
+            };
+
+            recognition.onerror = (event) => {
+                resetUI();
+                userInputDisplay.innerText = `[ Błąd transkrypcji: ${event.error} ]`;
+                triggerErrorResponse("Błąd łączności z systemem nasłuchu. Powtórz.");
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript.toLowerCase().trim();
+                userInputDisplay.innerText = `> ${transcript.toUpperCase()}`;
+                executeStrictSearch(transcript);
+            };
+
+            // Logika Strict Search (Symulacja RAG)
+            function executeStrictSearch(query) {
+                let foundDocument = null;
+
+                // Szukanie dopasowania (w produkcji zastąpione wyszukiwaniem semantycznym w bazie wektorowej)
+                for (const doc of knowledgeBaseDocuments) {
+                    const match = doc.keywords.some(keyword => query.includes(keyword));
+                    if (match) {
+                        foundDocument = doc;
+                        break;
+                    }
+                }
+
+                if (foundDocument) {
+                    // Scenariusz A: Informacja znaleziona w bazie
+                    displayAndSpeakSuccess(foundDocument);
+                } else {
+                    // Scenariusz B: Brak w bazie / Odmowa halucynacji
+                    triggerErrorResponse("Odmowa. Brak informacji we wskazanych dokumentach źródłowych. Podaj inny rozkaz.");
+                }
+            }
+
+            function displayAndSpeakSuccess(doc) {
+                // UI - Znacznik źródła
+                sourceIndicator.innerText = `WERYFIKACJA: ${doc.id}`;
+                sourceIndicator.classList.remove('hidden');
+
+                // UI - Tekst procedury
+                const formattedContent = doc.content.replace(/(\d+\.)/g, '<span class="text-yellow-500">$1</span>').replace(/\n/g, '<br>');
+                procedureOutput.innerHTML = `<span class="text-gray-400 text-2xl block mb-2">${doc.prefix}</span>${formattedContent}`;
+                
+                // Audio
+                const fullTextToSpeak = `${doc.prefix} ${doc.content}`;
+                speak(fullTextToSpeak);
+            }
+
+            function triggerErrorResponse(errorMessage) {
+                // UI
+                sourceIndicator.classList.add('hidden');
+                procedureOutput.innerHTML = `<span class="text-red-600 block bg-red-900/20 p-4 border border-red-800 rounded">[!] ${errorMessage.toUpperCase()}</span>`;
+                
+                // Audio
+                speak(errorMessage);
+            }
+
+            function speak(text) {
+                if (synth.speaking) synth.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'pl-PL';
+                utterance.rate = 1.1; 
+                utterance.pitch = 0.9; 
+                
+                synth.speak(utterance);
+            }
+
+            function resetUI() {
+                micBtn.classList.remove('listening');
+                statusIndicator.innerText = 'Gotowy';
+                statusIndicator.classList.replace('text-red-500', 'text-gray-400');
+            }
+
+            micBtn.addEventListener('click', () => {
+                if (micBtn.classList.contains('listening')) {
+                    recognition.stop();
+                } else {
+                    const unlockTTS = new SpeechSynthesisUtterance('');
+                    synth.speak(unlockTTS);
+                    recognition.start();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
