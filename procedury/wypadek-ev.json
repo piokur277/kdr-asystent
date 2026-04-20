@@ -1,0 +1,12 @@
+{
+  "id": "KARTA-Z1-Wypadek-EV",
+  "keywords": [
+    "wypadek elektryk", 
+    "wypadek hybryda", 
+    "rozbity elektryk", 
+    "zderzenie elektryk",
+    "wypadek ev"
+  ],
+  "prefix": "Zgodnie z Kartą Z1 KG PSP. Wypadek komunikacyjny pojazdu elektrycznego.",
+  "content": "1. Zabezpiecz miejsce i wyznacz strefę zagrożenia.\n2. Ewakuuj poszkodowanych przy bezpośrednim zagrożeniu życia.\n3. Przeprowadź obligatoryjną dezaktywację samochodu.\n4. Unikaj ingerowania sprzętem mechanicznym w pobliżu kabli wysokiego napięcia.\n5. Monitoruj temperaturę akumulatora.\n6. Jeśli temperatura rośnie powyżej 50 stopni Celsjusza, chłodź zewnętrzną obudowę wodą przez 10 minut i mierz ponownie."
+}
