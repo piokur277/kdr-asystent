@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KDR AI Assist | Gemini v3</title>
+    <title>KDR Hybrid Assist | AI + Keywords</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-ring {
@@ -22,14 +22,14 @@
 
     <header class="sticky top-0 bg-gray-950/90 backdrop-blur-md z-50 flex justify-between items-center border-b border-gray-800 pb-4 mb-4">
         <div>
-            <h1 class="text-2xl font-black tracking-tighter text-red-600 uppercase italic">KDR System AI</h1>
-            <p class="text-[10px] text-gray-500 font-mono mt-1 uppercase tracking-widest">Wsparcie Decyzyjne Gemini 1.5</p>
+            <h1 class="text-2xl font-black tracking-tighter text-red-600 uppercase italic">KDR System</h1>
+            <p id="mode-tag" class="text-[10px] text-gray-500 font-mono mt-1 uppercase tracking-widest text-yellow-500">Tryb Hybrydowy: AI + Baza</p>
         </div>
-        <div id="status-indicator" class="text-xs font-bold bg-gray-900 px-3 py-1 border border-gray-700 rounded uppercase text-gray-500">Inicjalizacja...</div>
+        <div id="status-indicator" class="text-xs font-bold bg-gray-900 px-3 py-1 border border-gray-700 rounded uppercase text-gray-500 text-green-500">Gotowy</div>
     </header>
 
     <main class="flex-grow flex flex-col items-center w-full max-w-4xl mx-auto">
-        <p id="user-input-display" class="text-lg text-gray-500 mb-6 text-center italic font-mono min-h-[28px]">Czekam na klucz API...</p>
+        <p id="user-input-display" class="text-lg text-gray-500 mb-6 text-center italic font-mono min-h-[28px]">Inicjalizacja systemu...</p>
         <div id="source-indicator" class="hidden-element text-xs font-bold px-4 py-2 rounded mb-6 source-badge uppercase tracking-tighter"></div>
         <div id="procedure-output" class="text-2xl md:text-4xl font-black leading-tight text-center text-white break-words w-full px-2"></div>
         <div class="content-spacer"></div>
@@ -37,7 +37,7 @@
 
     <footer class="fixed bottom-8 left-0 right-0 flex justify-center z-50 pointer-events-none">
         <div class="pointer-events-auto flex flex-col items-center">
-            <button id="mic-btn" disabled class="w-44 h-44 rounded-full border-4 border-gray-700 text-gray-400 font-black text-xl uppercase flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-2xl opacity-50">
+            <button id="mic-btn" class="w-44 h-44 rounded-full border-4 border-gray-700 text-gray-400 font-black text-xl uppercase flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-2xl">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
                 <span>Rozkaz</span>
             </button>
@@ -66,65 +66,67 @@
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
         async function initSystem() {
-            // Bezpieczne wprowadzanie klucza przez użytkownika
-            if(!GEMINI_API_KEY) {
-                GEMINI_API_KEY = prompt("Wpisz swój Gemini API Key:");
-            }
+            if(!GEMINI_API_KEY) GEMINI_API_KEY = prompt("Podaj Gemini API Key (zostaw puste dla trybu bez AI):");
             
-            statusIndicator.innerText = 'WCZYTYWANIE DANYCH...';
             for (const file of filesToLoad) {
                 try {
                     const res = await fetch(`${file}?v=${new Date().getTime()}`);
                     if (res.ok) knowledgeBaseDocuments.push(await res.json());
                 } catch (e) { console.error("Błąd pliku:", file); }
             }
-            
-            statusIndicator.innerText = 'AI GOTOWE';
-            statusIndicator.classList.replace('text-gray-500', 'text-green-500');
-            userInputDisplay.innerText = 'System gotowy do analizy...';
-            micBtn.disabled = false;
-            micBtn.classList.remove('opacity-50');
+            userInputDisplay.innerText = 'Oczekuję na komendę...';
         }
 
-        async function askGemini(userQuery) {
-            statusIndicator.innerText = 'ANALIZA AI...';
+        async function processCommand(query) {
+            statusIndicator.innerText = 'SZUKANIE...';
             
-            const context = knowledgeBaseDocuments.map(d => `ID: ${d.id}, Opis: ${d.prefix}`).join("\n");
-            
-            const promptContent = {
-                contents: [{
-                    parts: [{
-                        text: `Jesteś dyspozytorem Straży Pożarnej. Twoje zadanie to dopasowanie zgłoszenia KDR: "${userQuery}" do konkretnej procedury. Wybierz TYLKO ID procedury z listy poniżej. Jeśli zgłoszenie jest niejasne, wybierz najbardziej prawdopodobne. Jeśli zupełnie nic nie pasuje, odpowiedz "BRAK".\n\nLista procedur:\n${context}`
-                    }]
-                }]
-            };
+            // TRYB 1: Próba Gemini AI
+            if (GEMINI_API_KEY) {
+                try {
+                    const context = knowledgeBaseDocuments.map(d => `ID: ${d.id}, Opis: ${d.prefix}`).join("\n");
+                    const prompt = {
+                        contents: [{ parts: [{ text: `Wybierz ID procedury dla zgłoszenia: "${query}". Odpowiedz tylko ID lub "BRAK".\n\n${context}` }] }]
+                    };
 
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(promptContent)
-                });
-                
-                const data = await response.json();
-                const aiAnswer = data.candidates[0].content.parts[0].text.trim();
-                
-                let found = knowledgeBaseDocuments.find(d => aiAnswer.includes(d.id));
-                if (found) {
-                    displayProcedure(found);
-                } else {
-                    procedureOutput.innerHTML = '<span class="text-red-600 font-bold uppercase">AI nie dopasowało procedury. Spróbuj doprecyzować.</span>';
-                    speak("Odmowa. AI nie odnalazło wzorca.");
-                    toggleUI(false);
-                }
-            } catch (error) {
-                procedureOutput.innerHTML = '<span class="text-red-600">BŁĄD SIECI / API.</span>';
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(prompt)
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const aiAnswer = data.candidates[0].content.parts[0].text.trim();
+                        let found = knowledgeBaseDocuments.find(d => aiAnswer.includes(d.id));
+                        if (found) {
+                            displayProcedure(found, "WERYFIKACJA AI");
+                            return;
+                        }
+                    }
+                } catch (e) { console.warn("Błąd API Gemini, przełączam na tryb lokalny."); }
+            }
+
+            // TRYB 2: Fallback - Tradycyjne wyszukiwanie słów kluczowych
+            let bestMatch = null;
+            let maxScore = 0;
+
+            knowledgeBaseDocuments.forEach(doc => {
+                let score = 0;
+                doc.keywords.forEach(k => { if (query.includes(k)) score += k.length; });
+                if (score > maxScore) { maxScore = score; bestMatch = doc; }
+            });
+
+            if (bestMatch && maxScore > 3) {
+                displayProcedure(bestMatch, "WERYFIKACJA LOKALNA");
+            } else {
+                procedureOutput.innerHTML = '<span class="text-red-600">ODMOWA. BRAK DOPASOWANIA.</span>';
+                speak("Odmowa. Brak procedury.");
                 toggleUI(false);
             }
         }
 
-        function displayProcedure(doc) {
-            sourceIndicator.innerText = `ŹRÓDŁO: ${doc.id}`;
+        function displayProcedure(doc, modeText) {
+            sourceIndicator.innerText = `${modeText}: ${doc.id}`;
             sourceIndicator.classList.remove('hidden-element');
             const formatted = doc.content.replace(/(\d+\.)/g, '<br><span class="text-yellow-500 font-black">$1</span>').replace(/\n/g, '<br>');
             procedureOutput.innerHTML = `<span class="text-gray-500 text-lg block mb-4 italic">${doc.prefix}</span>${formatted}`;
@@ -135,7 +137,7 @@
         function toggleUI(showMic) {
             micBtn.classList.toggle('hidden-element', !showMic);
             resetBtn.classList.toggle('hidden-element', showMic);
-            statusIndicator.innerText = showMic ? 'AI GOTOWE' : 'AKCJA W TOKU';
+            statusIndicator.innerText = showMic ? 'GOTOWY' : 'AKCJA';
         }
 
         function speak(text) {
@@ -149,22 +151,15 @@
             initSystem().then(() => {
                 const recognition = new SpeechRecognition();
                 recognition.lang = 'pl-PL';
-
                 recognition.onstart = () => micBtn.classList.add('listening');
                 recognition.onend = () => micBtn.classList.remove('listening');
-                
-                recognition.onresult = (event) => {
-                    const transcript = event.results[0][0].transcript;
+                recognition.onresult = (e) => {
+                    const transcript = e.results[0][0].transcript.toLowerCase();
                     userInputDisplay.innerText = `ROZKAZ: ${transcript.toUpperCase()}`;
-                    askGemini(transcript);
+                    processCommand(transcript);
                 };
-
-                micBtn.addEventListener('click', () => {
-                    synth.speak(new SpeechSynthesisUtterance(''));
-                    recognition.start();
-                });
-
-                resetBtn.addEventListener('click', () => {
+                micBtn.addEventListener('click', () => { synth.speak(new SpeechSynthesisUtterance('')); recognition.start(); });
+                resetBtn.addEventListener('click', () => { 
                     if (synth.speaking) synth.cancel();
                     procedureOutput.innerHTML = '';
                     sourceIndicator.classList.add('hidden-element');
