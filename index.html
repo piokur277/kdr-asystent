@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KDR System AI | V5 Force</title>
+    <title>KDR System AI | V6 Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-ring {
@@ -12,33 +12,35 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
         .listening { animation: pulse-ring 1.5s infinite; background-color: #ef4444 !important; }
-        body { background-color: #030712; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: #020617; color: #f8fafc; font-family: ui-sans-serif, system-ui, sans-serif; }
         .hidden-element { display: none !important; }
-        .source-badge { display: inline-block; background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #4ade80; }
+        .source-badge { display: inline-block; background: #14532d; border: 1px solid #22c55e; color: #4ade80; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .content-spacer { height: 260px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-4 md:p-8">
 
-    <header class="border-b border-gray-800 pb-4 mb-4">
-        <div class="flex justify-between items-start">
+    <header class="border-b border-slate-800 pb-4 mb-4 flex justify-between items-start">
+        <div>
             <h1 class="text-2xl font-black text-red-600 uppercase italic leading-none">KDR System AI</h1>
-            <span class="text-[10px] bg-red-900 text-white px-2 py-0.5 rounded">WERSJA V5.0</span>
+            <div id="debug-console" class="mt-2 text-[9px] font-mono bg-black p-2 border border-slate-700 text-yellow-500 overflow-y-auto h-24 w-64">
+                > System V6...
+            </div>
         </div>
-        <div id="debug-console" class="mt-2 text-[10px] font-mono bg-black p-2 border border-gray-700 text-yellow-500 overflow-y-auto h-32">
-            > System V5 gotowy...
-        </div>
+        <span class="text-[10px] bg-red-600 text-white px-2 py-1 rounded font-bold">WERSJA V6.0</span>
     </header>
 
-    <main class="flex-grow flex flex-col items-center w-full max-w-4xl mx-auto text-center">
-        <p id="user-input-display" class="text-lg text-gray-500 mb-6 italic min-h-[28px]">Inicjalizacja bazy...</p>
-        <div id="procedure-output" class="text-2xl md:text-4xl font-bold leading-tight px-2"></div>
+    <main class="flex-grow flex flex-col items-center w-full max-w-4xl mx-auto">
+        <p id="user-input-display" class="text-slate-500 mb-6 text-center italic font-mono min-h-[28px]">Inicjalizacja...</p>
+        <div id="procedure-output" class="text-2xl md:text-4xl font-bold leading-tight text-center w-full"></div>
+        <div class="content-spacer"></div>
     </main>
 
     <footer class="fixed bottom-8 left-0 right-0 flex justify-center p-4">
-        <button id="mic-btn" disabled class="w-40 h-40 rounded-full border-4 border-gray-700 bg-gray-900 text-gray-400 font-bold uppercase transition-all">
-            Ładowanie...
+        <button id="mic-btn" disabled class="w-40 h-40 rounded-full border-4 border-slate-700 bg-slate-900 text-slate-400 font-bold uppercase transition-all shadow-2xl">
+            Czekaj...
         </button>
-        <button id="reset-btn" class="hidden-element w-40 h-40 rounded-full border-4 border-yellow-500 bg-gray-900 text-yellow-500 font-bold uppercase shadow-[0_0_20px_rgba(234,179,8,0.3)]">
+        <button id="reset-btn" class="hidden-element w-40 h-40 rounded-full border-4 border-yellow-500 bg-slate-900 text-yellow-500 font-bold uppercase shadow-[0_0_30px_rgba(234,179,8,0.4)]">
             Gotowy
         </button>
     </footer>
@@ -46,103 +48,88 @@
     <script>
         let GEMINI_API_KEY = "";
         let knowledgeBase = [];
-        const files = [
-            'procedury/wypadek-ev.json', 'procedury/pozar-ev.json', 'procedury/zatopienie-ev.json', 
-            'procedury/dezaktywacja-ev.json', 'procedury/wypadek-masowy.json'
-        ];
+        const files = ['procedury/wypadek-ev.json', 'procedury/pozar-ev.json', 'procedury/zatopienie-ev.json', 'procedury/dezaktywacja-ev.json', 'procedury/wypadek-masowy.json'];
 
-        const log = (msg, isError = false) => {
+        const log = (msg, isErr = false) => {
             const el = document.getElementById('debug-console');
-            el.innerHTML += `<div class="${isError ? 'text-red-500' : ''}">> ${msg}</div>`;
+            el.innerHTML += `<div class="${isErr ? 'text-red-500' : ''}">> ${msg}</div>`;
             el.scrollTop = el.scrollHeight;
         };
 
         async function init() {
-            log("Pobieranie plików procedur...");
+            log("Wczytywanie bazy...");
             for (const f of files) {
                 try {
                     const r = await fetch(`${f}?v=${Date.now()}`);
-                    if (!r.ok) throw new Error(r.status);
-                    knowledgeBase.push(await r.json());
-                    log(`Załadowano: ${f}`);
-                } catch (e) { log(`BŁĄD PLIKU: ${f}`, true); }
+                    if (r.ok) knowledgeBase.push(await r.json());
+                } catch (e) { log(`Błąd: ${f}`, true); }
             }
-
             if (knowledgeBase.length > 0) {
-                GEMINI_API_KEY = prompt("Wklej Gemini API Key (lub kliknij Anuluj dla trybu lokalnego):")?.trim();
+                GEMINI_API_KEY = prompt("Wklej Gemini API Key:")?.trim();
                 document.getElementById('mic-btn').disabled = false;
                 document.getElementById('mic-btn').innerText = "Rozkaz";
-                document.getElementById('mic-btn').classList.replace('text-gray-400', 'text-white');
-                document.getElementById('user-input-display').innerText = "Czekam na komendę...";
-            } else {
-                log("KRYTYCZNY BŁĄD: Baza jest pusta!", true);
+                document.getElementById('mic-btn').classList.replace('text-slate-400', 'text-white');
+                document.getElementById('user-input-display').innerText = "System gotowy.";
+                log("Gotowość bojowa.");
             }
         }
 
         async function handleCommand(query) {
-            log(`Analiza komendy: "${query}"`);
+            log(`Analiza: ${query}`);
             
-            // 1. PRÓBA AI (WYŁĄCZNIE V1 STABLE)
+            // 1. PRÓBA AI - NOWY ADRES BETA (Bardziej elastyczny)
             if (GEMINI_API_KEY) {
-                log("Łączenie z Gemini (API V1)...");
+                log("Łączenie z Gemini...");
                 try {
                     const ctx = knowledgeBase.map(d => `ID: ${d.id}, Opis: ${d.prefix}`).join("\n");
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                    
+                    const res = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: `Jesteś asystentem straży pożarnej. Na podstawie zgłoszenia: "${query}", wybierz JEDNO ID z listy: ${ctx}. Odpowiedz tylko samym ID.` }] }]
+                            contents: [{ parts: [{ text: `Jesteś asystentem KDR. Na podstawie rozkazu: "${query}", wybierz ID procedury z listy:\n${ctx}\nPodaj tylko samo ID.` }] }]
                         })
                     });
 
                     const data = await res.json();
                     if (res.ok) {
-                        const aiText = data.candidates[0].content.parts[0].text.trim();
-                        log(`AI zwróciło: ${aiText}`);
-                        const found = knowledgeBase.find(doc => aiText.includes(doc.id));
+                        const aiId = data.candidates[0].content.parts[0].text.trim();
+                        log(`AI: ${aiId}`);
+                        const found = knowledgeBase.find(doc => aiId.includes(doc.id));
                         if (found) { display(found, "WERYFIKACJA AI"); return; }
                     } else {
-                        log(`Błąd Google: ${data.error?.message}`, true);
+                        log(`Błąd: ${data.error?.message.substring(0,20)}...`, true);
                     }
-                } catch (e) { log("AI niedostępne. Przejście na tryb lokalny."); }
+                } catch (e) { log("AI zawiodło, tryb lokalny."); }
             }
 
-            // 2. NOWY, POTĘŻNY SILNIK LOKALNY (KEYWORDS)
-            log("Szukanie w bazie lokalnej V5...");
-            let best = null; 
-            let maxScore = 0;
-            const queryWords = query.toLowerCase().split(/\s+/);
-
+            // 2. SZUKANIE LOKALNE (FAIL-SAFE)
+            let best = null; let max = 0;
+            const words = query.toLowerCase().split(/\s+/);
             knowledgeBase.forEach(doc => {
-                let score = 0;
-                doc.keywords.forEach(keyword => {
-                    const k = keyword.toLowerCase();
-                    // Punktacja za pełne dopasowanie hasła
-                    if (query.includes(k)) score += (k.length * 5);
-                    
-                    // Punktacja za pojedyncze słowa (np. "woda", "dym", "triage")
-                    queryWords.forEach(word => {
-                        if (word.length > 3 && k.includes(word)) score += word.length;
-                    });
+                let s = 0;
+                doc.keywords.forEach(k => {
+                    const kl = k.toLowerCase();
+                    if (query.includes(kl)) s += 50;
+                    words.forEach(w => { if (w.length > 3 && kl.includes(w)) s += 10; });
                 });
-                if (score > maxScore) { maxScore = score; best = doc; }
+                if (s > max) { max = s; best = doc; }
             });
 
-            if (best && maxScore > 3) {
-                display(best, "WERYFIKACJA LOKALNA");
-            } else {
-                document.getElementById('procedure-output').innerHTML = '<span class="text-red-600 font-black">ODMOWA. BRAK DOPASOWANIA.</span>';
-                speak("Odmowa. Brak dopasowania.");
+            if (best && max > 5) display(best, "WERYFIKACJA LOKALNA");
+            else {
+                document.getElementById('procedure-output').innerHTML = '<span class="text-red-500 font-black">BRAK PROCEDURY</span>';
+                speak("Odmowa. Brak procedury.");
                 toggle(false);
             }
         }
 
         function display(doc, type) {
-            log(`Wyświetlam: ${doc.id}`);
             document.getElementById('procedure-output').innerHTML = `
-                <div class="mb-4"><span class="source-badge px-2 py-1 text-[10px] font-bold rounded uppercase">${type}</span></div>
-                <div class="text-gray-500 text-sm italic mb-4 leading-tight">${doc.prefix}</div>
-                <div class="text-left max-w-2xl mx-auto border-t border-gray-800 pt-6">
+                <div class="mb-4"><span class="source-badge">${type}</span></div>
+                <div class="text-slate-500 text-sm italic mb-4 leading-tight">${doc.prefix}</div>
+                <div class="text-left max-w-2xl mx-auto border-t border-slate-800 pt-6">
                     ${doc.content.replace(/(\d+\.)/g, '<br><span class="text-yellow-500 font-black">$1</span>').replace(/\n/g, '<br>')}
                 </div>
             `;
@@ -181,7 +168,7 @@
             document.getElementById('reset-btn').onclick = () => { 
                 window.speechSynthesis.cancel(); 
                 document.getElementById('procedure-output').innerHTML = ''; 
-                document.getElementById('user-input-display').innerText = 'Oczekuję na komendę...';
+                document.getElementById('user-input-display').innerText = 'Gotowy.';
                 toggle(true); 
             };
         });
