@@ -3,57 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KDR AI | Core V13</title>
+    <title>KDR AI | Core V14 Perfect Scroll</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         .listening { animation: pulse 1s infinite; background-color: #ef4444 !important; }
-        body { background-color: #020617; color: #f8fafc; font-family: system-ui, sans-serif; overflow: hidden; position: fixed; width: 100%; height: 100%; }
+        body { background-color: #020617; color: #f8fafc; font-family: system-ui, sans-serif; overflow: hidden; }
         .source-badge { display: inline-block; background: #064e3b; border: 1px solid #10b981; color: #34d399; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
         .hidden { display: none !important; }
         
-        /* MINIMALISTYCZNA KONSOLA */
         #debug-console {
             height: 34px;
             overflow-y: auto;
             font-size: 8px;
-            line-height: 1;
+            line-height: 1.2;
             background: rgba(0,0,0,0.5);
             border-left: 2px solid #ef4444;
         }
 
-        /* OBSZAR PRZEWIJANIA Z BUFOREM NA PRZYCISK */
-        #procedure-scroll-area {
-            height: calc(100vh - 120px); /* Większy obszar roboczy */
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 220px; /* KLUCZ: Miejsce, żeby tekst "wjechał" nad przycisk */
-        }
+        /* Ulepszony obszar przewijania ukrywający pasek dla estetyki */
+        #procedure-scroll-area::-webkit-scrollbar { width: 4px; }
+        #procedure-scroll-area::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     </style>
 </head>
-<body class="flex flex-col p-3">
-
-    <header class="border-b border-slate-800 pb-1 mb-2">
+<body class="flex flex-col p-3 h-screen"> <header class="flex-none border-b border-slate-800 pb-1 mb-2">
         <div class="flex justify-between items-baseline">
             <h1 class="text-lg font-black text-red-600 uppercase italic tracking-tighter">KDR AI SYSTEM</h1>
-            <span class="text-[8px] text-slate-500 uppercase">v13.0 Combat</span>
+            <span class="text-[8px] text-slate-500 uppercase">v14.0 UI Fix</span>
         </div>
-        
         <div id="debug-console" class="mt-1 p-1 font-mono text-yellow-600">
-            > Gotowość bojowa V13...
+            > System V14 zoptymalizowany.
         </div>
     </header>
 
-    <main class="flex-grow flex flex-col">
-        <p id="user-input-display" class="text-slate-400 text-xs italic mb-2 text-center min-h-[16px] uppercase font-bold tracking-tighter"></p>
+    <main class="flex-1 flex flex-col min-h-0 relative">
+        <p id="user-input-display" class="flex-none text-slate-400 text-xs italic mb-2 text-center uppercase font-bold tracking-tighter h-4"></p>
         
-        <div id="procedure-scroll-area">
+        <div id="procedure-scroll-area" class="flex-1 overflow-y-auto w-full">
             <div id="procedure-output" class="text-3xl md:text-5xl font-black leading-tight text-center px-1">
                 </div>
         </div>
     </main>
 
-    <footer class="fixed bottom-8 left-0 right-0 flex justify-center z-50 pointer-events-none">
+    <footer class="fixed bottom-6 left-0 right-0 flex justify-center z-50 pointer-events-none">
         <div class="pointer-events-auto">
             <button id="mic-btn" disabled class="w-40 h-40 rounded-full border-4 border-slate-700 bg-slate-950/90 backdrop-blur-sm text-slate-400 font-black uppercase shadow-2xl transition-all">
                 Rozkaz
@@ -145,12 +137,14 @@
             document.getElementById('procedure-output').innerHTML = `
                 <div class="mb-2"><span class="source-badge">${type}</span></div>
                 <div class="text-slate-500 text-[10px] italic mb-4">${doc.prefix}</div>
-                <div class="text-left border-t border-slate-800 pt-4 pb-10">
+                <div class="text-left border-t border-slate-800 pt-4">
                     ${doc.content.replace(/(\d+\.)/g, '<br><span class="text-yellow-500 font-black">$1</span>').replace(/\n/g, '<br>')}
                 </div>
+                <div class="h-64 w-full text-transparent">END_OF_DOC</div> 
             `;
             speak(`${doc.prefix}. ${doc.content}`);
             toggle(false);
+            // Powrót na górę przy każdej nowej komendzie
             document.getElementById('procedure-scroll-area').scrollTop = 0;
         }
 
