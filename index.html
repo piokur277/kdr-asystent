@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KDR Voice Assist | STRICT RAG</title>
+    <title>KDR Voice Assist | Modułowy RAG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-ring {
@@ -31,17 +31,17 @@
     <header class="flex justify-between items-center border-b border-gray-800 pb-4">
         <div>
             <h1 class="text-3xl font-black tracking-widest text-red-600 uppercase">KDR System</h1>
-            <p class="text-xs text-gray-500 font-mono mt-1">TRYB: RYGORYSTYCZNE WYSZUKIWANIE ŹRÓDŁOWE (RAG)</p>
+            <p class="text-xs text-gray-500 font-mono mt-1">TRYB: DYNAMICZNA BAZA PROCEDUR (JSON)</p>
         </div>
         <div id="status-indicator" class="text-sm font-bold bg-gray-900 px-4 py-2 border border-gray-700 rounded uppercase text-gray-400">
-            Gotowy
+            Inicjalizacja...
         </div>
     </header>
 
     <main class="flex-grow flex flex-col justify-center items-center py-6 w-full max-w-5xl mx-auto">
         
         <p id="user-input-display" class="text-xl md:text-2xl text-gray-500 mb-4 text-center italic min-h-[40px] font-mono">
-            Oczekuję na komendę...
+            Ładowanie modułów pamięci...
         </p>
         
         <div id="source-indicator" class="hidden text-sm md:text-base font-bold px-4 py-2 rounded mb-6 source-badge uppercase tracking-wider">
@@ -52,7 +52,7 @@
     </main>
 
     <footer class="flex justify-center pb-4">
-        <button id="mic-btn" class="w-48 h-48 md:w-56 md:h-56 rounded-full border-4 border-gray-600 text-gray-300 font-bold text-2xl uppercase transition-all duration-200 active:scale-95 flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-2xl">
+        <button id="mic-btn" disabled class="w-48 h-48 md:w-56 md:h-56 rounded-full border-4 border-gray-600 text-gray-300 font-bold text-2xl uppercase transition-all duration-200 active:scale-95 flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-2xl opacity-50 cursor-not-allowed">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
             </svg>
@@ -61,159 +61,171 @@
     </footer>
 
     <script>
-        /* =====================================================================
-           [DO DEVÓW BACKENDOWYCH / INŻYNIERÓW AI]:
-           1. Zastąpcie lokalną tablicę 'knowledgeBaseDocuments' wywołaniem 
-              do wektorowej bazy danych (np. Pinecone, ChromaDB, Weaviate).
-           2. Flow backendowe:
-              User Voice -> Transkrypcja (Whisper API) -> Generowanie Embeddingu zapytania 
-              -> Wyszukiwanie podobieństw (Cosine Similarity) w bazie wektorowej procedur.
-           3. Zwrócony kontekst (Top-K documents) wstrzyknijcie do prompta systemowego LLM.
-           4. KRYTYCZNE: Skonfigurujcie model LLM (np. GPT-4o / Claude 3.5 Sonnet) 
-              z parametrem `temperature=0` (maksymalny determinizm).
-           5. Prompt systemowy musi zawierać klauzulę: "Odpowiadaj TYLKO w oparciu 
-              o dostarczony kontekst. Jeśli nie ma w nim odpowiedzi, zwróć słowo: [ODMOWA]".
-           ===================================================================== */
+        // Dynamiczna tablica na wczytane procedury
+        let knowledgeBaseDocuments = [];
 
-        // Mockup Bazy Wiedzy RAG (Symulacja indeksów wektorowych)
-        const knowledgeBaseDocuments = [
-            {
-                id: "KSRG-2024-ZAL-03",
-                keywords: ["wypadek masowy", "wypadek", "triage", "segregacja", "mnoga"],
-                prefix: "Zgodnie z procedurą TRIAGE z dokumentu KSRG-2024.",
-                content: "1. Wyznacz strefy.\n2. Segreguj poszkodowanych (Czerwony, Żółty, Zielony, Czarny).\n3. Raportuj zapotrzebowanie na siły i środki."
-            },
-            {
-                id: "PROC-WEW-01",
-                keywords: ["pożar wewnętrzny", "rota", "pożar budynku"],
-                prefix: "Zgodnie z wytycznymi natarcia z dokumentu PROC-WEW-01.",
-                content: "1. Rota gotowa w pełnym zabezpieczeniu ODO.\n2. Linia nawodniona.\n3. Kontrola temperatury drzwi.\n4. Natarcie."
-            },
-            {
-                id: "CHEM-ZAL-08",
-                keywords: ["wyciek substancji", "wyciek chemiczny", "rozlewisko"],
-                prefix: "Zgodnie z instrukcją ratownictwa chemicznego CHEM-ZAL-08.",
-                content: "1. Wyznacz strefę zagrożenia i strefę bezpieczną.\n2. Zabezpiecz pobliskie studzienki kanalizacyjne.\n3. Rozpoznaj substancję (kod Kemlera).\n4. Zbuduj kurtynę wodną."
-            }
+        // Lista plików JSON do załadowania (KDR zarządza tymi plikami w folderze /procedury na GitHubie)
+        const filesToLoad = [
+            'procedury/pozar-wewnetrzny.json',
+            'procedury/wypadek-masowy.json',
+            'procedury/wyciek-chemiczny.json'
         ];
 
-        // Inicjalizacja Web Speech API
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const synth = window.speechSynthesis;
-        
+        // Referencje UI
         const micBtn = document.getElementById('mic-btn');
         const statusIndicator = document.getElementById('status-indicator');
         const userInputDisplay = document.getElementById('user-input-display');
         const procedureOutput = document.getElementById('procedure-output');
         const sourceIndicator = document.getElementById('source-indicator');
 
-        if (!SpeechRecognition) {
-            procedureOutput.innerHTML = '<span class="text-red-500">BŁĄD: Przeglądarka nie obsługuje Web Speech API. Użyj Google Chrome.</span>';
-            micBtn.disabled = true;
-        } else {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'pl-PL';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
+        // Globalne obiekty Speech API
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const synth = window.speechSynthesis;
 
-            recognition.onstart = () => {
-                micBtn.classList.add('listening');
-                statusIndicator.innerText = 'Słucham...';
-                statusIndicator.classList.replace('text-gray-400', 'text-red-500');
-                userInputDisplay.innerText = '[ Wprowadzanie komendy... ]';
-                sourceIndicator.classList.add('hidden');
-                procedureOutput.innerHTML = '';
-            };
+        // 1. Faza: Pobieranie bazy wiedzy (Plików JSON)
+        async function loadProcedures() {
+            statusIndicator.innerText = 'Pobieranie bazy...';
+            statusIndicator.classList.replace('text-gray-400', 'text-yellow-500');
 
-            recognition.onspeechend = () => {
-                recognition.stop();
-                resetUI();
-            };
+            for (const file of filesToLoad) {
+                try {
+                    // Dodajemy znacznik czasu (cache-bust), aby GitHub Pages nie trzymało starej wersji pliku w pamięci
+                    const response = await fetch(`${file}?v=${new Date().getTime()}`);
+                    if (!response.ok) {
+                        throw new Error(`Błąd HTTP: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    knowledgeBaseDocuments.push(data);
+                    console.log(`[KDR System] Pomyślnie załadowano: ${file}`);
+                } catch (error) {
+                    console.warn(`[KDR System] Brak lub błąd w pliku ${file}. Przyczyna:`, error);
+                }
+            }
 
-            recognition.onerror = (event) => {
-                resetUI();
-                userInputDisplay.innerText = `[ Błąd transkrypcji: ${event.error} ]`;
-                triggerErrorResponse("Błąd łączności z systemem nasłuchu. Powtórz.");
-            };
+            // Weryfikacja czy cokolwiek się załadowało
+            if (knowledgeBaseDocuments.length === 0) {
+                procedureOutput.innerHTML = '<span class="text-red-500">BŁĄD: Nie załadowano żadnych procedur. Sprawdź folder /procedury/ i upewnij się, że pliki JSON istnieją.</span>';
+                statusIndicator.innerText = 'Brak Danych';
+                statusIndicator.classList.replace('text-yellow-500', 'text-red-500');
+                userInputDisplay.innerText = 'System zablokowany.';
+            } else {
+                statusIndicator.innerText = 'Gotowy';
+                statusIndicator.classList.replace('text-yellow-500', 'text-gray-400');
+                userInputDisplay.innerText = 'Oczekuję na komendę...';
+                
+                // Odblokowanie przycisku
+                micBtn.disabled = false;
+                micBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
 
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript.toLowerCase().trim();
-                userInputDisplay.innerText = `> ${transcript.toUpperCase()}`;
-                executeStrictSearch(transcript);
-            };
+        // 2. Faza: Inicjalizacja asystenta głosowego po załadowaniu danych
+        window.addEventListener('load', () => {
+            loadProcedures().then(() => {
+                
+                // Sprawdzenie wsparcia przeglądarki
+                if (!SpeechRecognition) {
+                    procedureOutput.innerHTML = '<span class="text-red-500">BŁĄD: Przeglądarka nie obsługuje Web Speech API. Użyj Google Chrome.</span>';
+                    micBtn.disabled = true;
+                    micBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    return;
+                }
 
-            // Logika Strict Search (Symulacja RAG)
-            function executeStrictSearch(query) {
-                let foundDocument = null;
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'pl-PL';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
 
-                // Szukanie dopasowania (w produkcji zastąpione wyszukiwaniem semantycznym w bazie wektorowej)
-                for (const doc of knowledgeBaseDocuments) {
-                    const match = doc.keywords.some(keyword => query.includes(keyword));
-                    if (match) {
-                        foundDocument = doc;
-                        break;
+                // Zdarzenia rozpoznawania mowy
+                recognition.onstart = () => {
+                    micBtn.classList.add('listening');
+                    statusIndicator.innerText = 'Słucham...';
+                    statusIndicator.classList.replace('text-gray-400', 'text-red-500');
+                    userInputDisplay.innerText = '[ Wprowadzanie komendy... ]';
+                    sourceIndicator.classList.add('hidden');
+                    procedureOutput.innerHTML = '';
+                };
+
+                recognition.onspeechend = () => {
+                    recognition.stop();
+                    resetUI();
+                };
+
+                recognition.onerror = (event) => {
+                    resetUI();
+                    userInputDisplay.innerText = `[ Błąd transkrypcji: ${event.error} ]`;
+                    triggerErrorResponse("Błąd łączności. Powtórz rozkaz.");
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript.toLowerCase().trim();
+                    userInputDisplay.innerText = `> ${transcript.toUpperCase()}`;
+                    executeStrictSearch(transcript);
+                };
+
+                // Logika Wyszukiwania w załadowanej bazie
+                function executeStrictSearch(query) {
+                    let foundDocument = null;
+                    for (const doc of knowledgeBaseDocuments) {
+                        const match = doc.keywords.some(keyword => query.includes(keyword));
+                        if (match) {
+                            foundDocument = doc;
+                            break;
+                        }
+                    }
+
+                    if (foundDocument) {
+                        displayAndSpeakSuccess(foundDocument);
+                    } else {
+                        triggerErrorResponse("Odmowa. Brak informacji we wskazanych dokumentach źródłowych.");
                     }
                 }
 
-                if (foundDocument) {
-                    // Scenariusz A: Informacja znaleziona w bazie
-                    displayAndSpeakSuccess(foundDocument);
-                } else {
-                    // Scenariusz B: Brak w bazie / Odmowa halucynacji
-                    triggerErrorResponse("Odmowa. Brak informacji we wskazanych dokumentach źródłowych. Podaj inny rozkaz.");
+                function displayAndSpeakSuccess(doc) {
+                    sourceIndicator.innerText = `WERYFIKACJA: ${doc.id}`;
+                    sourceIndicator.classList.remove('hidden');
+                    
+                    const formattedContent = doc.content.replace(/(\d+\.)/g, '<span class="text-yellow-500">$1</span>').replace(/\n/g, '<br>');
+                    procedureOutput.innerHTML = `<span class="text-gray-400 text-2xl block mb-2">${doc.prefix}</span>${formattedContent}`;
+                    
+                    const fullTextToSpeak = `${doc.prefix} ${doc.content}`;
+                    speak(fullTextToSpeak);
                 }
-            }
 
-            function displayAndSpeakSuccess(doc) {
-                // UI - Znacznik źródła
-                sourceIndicator.innerText = `WERYFIKACJA: ${doc.id}`;
-                sourceIndicator.classList.remove('hidden');
-
-                // UI - Tekst procedury
-                const formattedContent = doc.content.replace(/(\d+\.)/g, '<span class="text-yellow-500">$1</span>').replace(/\n/g, '<br>');
-                procedureOutput.innerHTML = `<span class="text-gray-400 text-2xl block mb-2">${doc.prefix}</span>${formattedContent}`;
-                
-                // Audio
-                const fullTextToSpeak = `${doc.prefix} ${doc.content}`;
-                speak(fullTextToSpeak);
-            }
-
-            function triggerErrorResponse(errorMessage) {
-                // UI
-                sourceIndicator.classList.add('hidden');
-                procedureOutput.innerHTML = `<span class="text-red-600 block bg-red-900/20 p-4 border border-red-800 rounded">[!] ${errorMessage.toUpperCase()}</span>`;
-                
-                // Audio
-                speak(errorMessage);
-            }
-
-            function speak(text) {
-                if (synth.speaking) synth.cancel();
-                
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'pl-PL';
-                utterance.rate = 1.1; 
-                utterance.pitch = 0.9; 
-                
-                synth.speak(utterance);
-            }
-
-            function resetUI() {
-                micBtn.classList.remove('listening');
-                statusIndicator.innerText = 'Gotowy';
-                statusIndicator.classList.replace('text-red-500', 'text-gray-400');
-            }
-
-            micBtn.addEventListener('click', () => {
-                if (micBtn.classList.contains('listening')) {
-                    recognition.stop();
-                } else {
-                    const unlockTTS = new SpeechSynthesisUtterance('');
-                    synth.speak(unlockTTS);
-                    recognition.start();
+                function triggerErrorResponse(errorMessage) {
+                    sourceIndicator.classList.add('hidden');
+                    procedureOutput.innerHTML = `<span class="text-red-600 block bg-red-900/20 p-4 border border-red-800 rounded">[!] ${errorMessage.toUpperCase()}</span>`;
+                    speak(errorMessage);
                 }
+
+                function speak(text) {
+                    if (synth.speaking) synth.cancel();
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'pl-PL';
+                    utterance.rate = 1.1; 
+                    utterance.pitch = 0.9; 
+                    synth.speak(utterance);
+                }
+
+                function resetUI() {
+                    micBtn.classList.remove('listening');
+                    statusIndicator.innerText = 'Gotowy';
+                    statusIndicator.classList.replace('text-red-500', 'text-gray-400');
+                }
+
+                // Obsługa kliknięcia "Rozkaz"
+                micBtn.addEventListener('click', () => {
+                    if (micBtn.classList.contains('listening')) {
+                        recognition.stop();
+                    } else {
+                        // Inicjalizacja silnika TTS na urządzeniach mobilnych
+                        const unlockTTS = new SpeechSynthesisUtterance('');
+                        synth.speak(unlockTTS);
+                        recognition.start();
+                    }
+                });
             });
-        }
+        });
     </script>
 </body>
 </html>
