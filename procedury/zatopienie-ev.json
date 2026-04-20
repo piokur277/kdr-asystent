@@ -1,8 +1,6 @@
 {
   "id": "KARTA-Z3-Zatopienie-EV",
-  "keywords": [
-    "elektryk w wodzie", "zatopiony elektryk", "woda elektryk", "zalany elektryk", "hybryda w wodzie"
-  ],
+  "keywords": ["elektryk w wodzie", "zatopiony elektryk", "woda elektryk", "zalany elektryk", "hybryda w wodzie", "auto w rzece", "samochód w jeziorze", "wpadł do wody", "utopiony elektryk", "wyciąganie z wody", "elektryk pod wodą", "auto w stawie", "zalanie pojazdu", "powódź elektryk", "auto w rowie z wodą", "wjazd do wody", "elektryk wpadł do rzeki", "pojazd w wodzie"],
   "prefix": "Zgodnie z Kartą Z3 KG PSP. Zatopienie samochodu w wodzie.",
   "content": "1. Postępuj jak przy samochodzie spalinowym - pojazd w wodzie nie stwarza zagrożenia porażenia prądem.\n2. Natychmiast ewakuuj poszkodowanych.\n3. Zabezpiecz wycieki płynów na powierzchni wody.\n4. Wyznacz bezpieczne punkty mocowania wyciągarki, omijając akumulator.\n5. Po wydobyciu pojazdu z wody monitoruj temperaturę baterii i przeprowadź procedurę dezaktywacji."
 }
