@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KDR Voice Assist | Mobile V2</title>
+    <title>KDR Voice Assist | Intuitive V3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-ring {
@@ -33,10 +33,8 @@
 
         .hidden-element { display: none !important; }
 
-        /* Miejsce na dole, żeby tekst nie chował się pod przyciskami */
         .content-spacer { height: 260px; }
 
-        /* Stylizacja scrollbara dla zachowania estetyki */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
     </style>
@@ -46,7 +44,7 @@
     <header class="sticky top-0 bg-gray-950/90 backdrop-blur-md z-50 flex justify-between items-center border-b border-gray-800 pb-4 mb-4">
         <div>
             <h1 class="text-2xl font-black tracking-tighter text-red-600 uppercase italic">KDR System</h1>
-            <p class="text-[10px] text-gray-500 font-mono mt-1 uppercase tracking-widest">Procedury Ratownicze v2.0</p>
+            <p class="text-[10px] text-gray-500 font-mono mt-1 uppercase tracking-widest">Procedury Ratownicze v3.0 (Intuitive)</p>
         </div>
         <div id="status-indicator" class="text-xs font-bold bg-gray-900 px-3 py-1 border border-gray-700 rounded uppercase text-gray-500">
             Inicjalizacja...
@@ -126,10 +124,7 @@
 
         window.addEventListener('load', () => {
             loadProcedures().then(() => {
-                if (!SpeechRecognition) {
-                    userInputDisplay.innerText = "Błąd: Brak obsługi głosu w przeglądarce.";
-                    return;
-                }
+                if (!SpeechRecognition) return;
 
                 const recognition = new SpeechRecognition();
                 recognition.lang = 'pl-PL';
@@ -138,7 +133,6 @@
                 recognition.onstart = () => {
                     micBtn.classList.add('listening');
                     statusIndicator.innerText = 'SŁUCHAM...';
-                    userInputDisplay.innerText = 'Słucham rozkazu...';
                 };
 
                 recognition.onresult = (event) => {
@@ -151,25 +145,47 @@
                     micBtn.classList.remove('listening');
                 };
 
+                // INTUICYJNY ALGORYTM WYSZUKIWANIA PUNKTOWEGO
                 function searchAndDisplay(query) {
-                    let found = knowledgeBaseDocuments.find(doc => doc.keywords.some(k => query.includes(k)));
-                    
-                    if (found) {
-                        sourceIndicator.innerText = `ŹRÓDŁO: ${found.id}`;
-                        sourceIndicator.classList.remove('hidden-element');
+                    let bestMatch = null;
+                    let maxScore = 0;
+
+                    knowledgeBaseDocuments.forEach(doc => {
+                        let currentScore = 0;
+                        doc.keywords.forEach(keyword => {
+                            if (query.includes(keyword)) {
+                                // Premiujemy dłuższe frazy jako dokładniejsze
+                                currentScore += (keyword.length * 2);
+                            }
+                        });
                         
-                        const formatted = found.content
-                            .replace(/(\d+\.)/g, '<br><span class="text-yellow-500 font-black">$1</span>')
-                            .replace(/\n/g, '<br>');
-                        
-                        procedureOutput.innerHTML = `<span class="text-gray-500 text-lg block mb-4 italic">${found.prefix}</span>${formatted}`;
-                        speak(`${found.prefix} ${found.content}`);
-                        toggleUI(false); 
+                        if (currentScore > maxScore) {
+                            maxScore = currentScore;
+                            bestMatch = doc;
+                        }
+                    });
+
+                    // Próg czułości (maxScore > 4, aby uniknąć przypadkowych trafień na pojedynczych literach)
+                    if (bestMatch && maxScore > 4) {
+                        displayProcedure(bestMatch);
                     } else {
-                        procedureOutput.innerHTML = '<span class="text-red-600">ODMOWA. BRAK PROCEDURY W BAZIE.</span>';
-                        speak("Odmowa. Brak procedury w bazie danych.");
+                        procedureOutput.innerHTML = '<span class="text-red-600">ODMOWA. NIE ZROZUMIAŁEM LUB BRAK PROCEDURY.</span>';
+                        speak("Odmowa. Nie zrozumiałem rozkazu.");
                         toggleUI(false);
                     }
+                }
+
+                function displayProcedure(doc) {
+                    sourceIndicator.innerText = `ŹRÓDŁO: ${doc.id}`;
+                    sourceIndicator.classList.remove('hidden-element');
+                    
+                    const formatted = doc.content
+                        .replace(/(\d+\.)/g, '<br><span class="text-yellow-500 font-black">$1</span>')
+                        .replace(/\n/g, '<br>');
+                    
+                    procedureOutput.innerHTML = `<span class="text-gray-500 text-lg block mb-4 italic">${doc.prefix}</span>${formatted}`;
+                    speak(`${doc.prefix} ${doc.content}`);
+                    toggleUI(false); 
                 }
 
                 function toggleUI(showMic) {
@@ -180,7 +196,7 @@
                     } else {
                         micBtn.classList.add('hidden-element');
                         resetBtn.classList.remove('hidden-element');
-                        statusIndicator.innerText = 'TRYB PROCEDURY';
+                        statusIndicator.innerText = 'PROCEDURA AKTYWNA';
                     }
                 }
 
@@ -193,7 +209,6 @@
                 }
 
                 micBtn.addEventListener('click', () => {
-                    // Odblokowanie mowy na iOS
                     const unlock = new SpeechSynthesisUtterance('');
                     synth.speak(unlock);
                     recognition.start();
@@ -203,7 +218,7 @@
                     if (synth.speaking) synth.cancel();
                     procedureOutput.innerHTML = '';
                     sourceIndicator.classList.add('hidden-element');
-                    userInputDisplay.innerText = 'Oczekuję na następną komendę...';
+                    userInputDisplay.innerText = 'Oczekuję na następny rozkaz...';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     toggleUI(true);
                 });
