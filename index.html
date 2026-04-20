@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KDR System | Debug Mode</title>
+    <title>KDR System | AI Diagnostics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-ring {
@@ -14,27 +14,28 @@
         .listening { animation: pulse-ring 1.5s infinite; background-color: #ef4444 !important; }
         body { background-color: #030712; color: #f3f4f6; font-family: ui-sans-serif, system-ui; }
         .hidden-element { display: none !important; }
+        .source-badge { display: inline-block; background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #4ade80; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-4 md:p-8">
 
     <header class="border-b border-gray-800 pb-4 mb-4">
-        <h1 class="text-2xl font-black text-red-600 uppercase italic">KDR System AI</h1>
-        <div id="debug-console" class="mt-2 text-[10px] font-mono bg-black p-2 border border-gray-700 text-yellow-500 overflow-y-auto max-h-32">
-            Inicjalizacja konsoli...
+        <h1 class="text-2xl font-black text-red-600 uppercase italic leading-none">KDR System AI</h1>
+        <div id="debug-console" class="mt-2 text-[10px] font-mono bg-black p-2 border border-gray-700 text-yellow-500 overflow-y-auto h-32">
+            > System gotowy...
         </div>
     </header>
 
     <main class="flex-grow flex flex-col items-center w-full max-w-4xl mx-auto text-center">
-        <p id="user-input-display" class="text-lg text-gray-500 mb-6 italic min-h-[28px]">Czekam na bazę danych...</p>
+        <p id="user-input-display" class="text-lg text-gray-500 mb-6 italic min-h-[28px]">Inicjalizacja...</p>
         <div id="procedure-output" class="text-2xl md:text-4xl font-bold leading-tight"></div>
     </main>
 
     <footer class="fixed bottom-8 left-0 right-0 flex justify-center p-4">
-        <button id="mic-btn" disabled class="w-40 h-40 rounded-full border-4 border-gray-700 bg-gray-900 text-gray-500 font-bold uppercase opacity-50">
-            Czekaj...
+        <button id="mic-btn" disabled class="w-40 h-40 rounded-full border-4 border-gray-700 bg-gray-900 text-gray-400 font-bold uppercase transition-all">
+            Ładowanie...
         </button>
-        <button id="reset-btn" class="hidden-element w-40 h-40 rounded-full border-4 border-yellow-500 bg-gray-900 text-yellow-500 font-bold uppercase">
+        <button id="reset-btn" class="hidden-element w-40 h-40 rounded-full border-4 border-yellow-500 bg-gray-900 text-yellow-500 font-bold uppercase shadow-[0_0_20px_rgba(234,179,8,0.3)]">
             Gotowy
         </button>
     </footer>
@@ -43,11 +44,8 @@
         let GEMINI_API_KEY = "";
         let knowledgeBase = [];
         const files = [
-            'procedury/wypadek-ev.json',
-            'procedury/pozar-ev.json',
-            'procedury/zatopienie-ev.json',
-            'procedury/dezaktywacja-ev.json',
-            'procedury/wypadek-masowy.json'
+            'procedury/wypadek-ev.json', 'procedury/pozar-ev.json', 'procedury/zatopienie-ev.json', 
+            'procedury/dezaktywacja-ev.json', 'procedury/wypadek-masowy.json'
         ];
 
         const log = (msg, isError = false) => {
@@ -57,59 +55,62 @@
         };
 
         async function init() {
-            log("Rozpoczynam pobieranie plików...");
+            log("Pobieranie bazy...");
             for (const f of files) {
                 try {
                     const r = await fetch(`${f}?v=${Date.now()}`);
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    const data = await r.json();
-                    knowledgeBase.push(data);
-                    log(`OK: ${f}`);
-                } catch (e) {
-                    log(`BŁĄD: ${f} (${e.message})`, true);
-                }
+                    if (!r.ok) throw new Error(`Status ${r.status}`);
+                    knowledgeBase.push(await r.json());
+                    log(`Załadowano: ${f}`);
+                } catch (e) { log(`Błąd bazy: ${f}`, true); }
             }
 
             if (knowledgeBase.length > 0) {
-                log(`ŁĄCZNIE ZAŁADOWANO: ${knowledgeBase.length} PROCEDUR`);
-                document.getElementById('mic-btn').disabled = false;
-                document.getElementById('mic-btn').classList.remove('opacity-50');
-                document.getElementById('mic-btn').classList.replace('text-gray-500', 'text-white');
-                document.getElementById('mic-btn').innerText = "Rozkaz";
-                document.getElementById('user-input-display').innerText = "System gotowy. Podaj rozkaz.";
+                GEMINI_API_KEY = prompt("Wklej klucz API (uważaj na spacje!):")?.trim();
+                if (!GEMINI_API_KEY) log("Brak klucza API - tylko tryb lokalny.", true);
                 
-                // Opcjonalnie: prośba o klucz AI
-                if (confirm("Czy chcesz używać AI (Gemini)? Kliknij Anuluj, by używać tylko bazy lokalnej.")) {
-                    GEMINI_API_KEY = prompt("Wklej klucz API:");
-                }
-            } else {
-                log("KRYTYCZNY BŁĄD: Brak danych w bazie!", true);
-                document.getElementById('user-input-display').innerText = "BŁĄD BAZY DANYCH.";
+                document.getElementById('mic-btn').disabled = false;
+                document.getElementById('mic-btn').innerText = "Rozkaz";
+                document.getElementById('mic-btn').classList.replace('text-gray-400', 'text-white');
+                document.getElementById('user-input-display').innerText = "Oczekuję na komendę...";
             }
         }
 
         async function handleCommand(query) {
-            log(`Analiza komendy: "${query}"`);
+            log(`Analiza: "${query}"`);
             
             if (GEMINI_API_KEY) {
-                log("Wysyłam do Gemini...");
+                log("Łączenie z Gemini...");
                 try {
                     const ctx = knowledgeBase.map(d => `ID: ${d.id}, Opis: ${d.prefix}`).join("\n");
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: `Wybierz tylko ID procedury dla: "${query}". Lista:\n${ctx}` }] }]
+                            contents: [{ parts: [{ text: `Jesteś asystentem KDR. Wybierz ID procedury dla: "${query}". Lista dostępnych ID:\n${ctx}\nOdpowiedz TYLKO samym ID (np. KARTA-Z1-Wypadek-EV). Jeśli nic nie pasuje, odpowiedz: BRAK.` }] }]
                         })
                     });
-                    const d = await res.json();
-                    const id = d.candidates[0].content.parts[0].text.trim();
-                    const found = knowledgeBase.find(doc => id.includes(doc.id));
+
+                    const data = await res.json();
+                    
+                    if (!res.ok) {
+                        log(`Błąd serwera Google: ${data.error?.message || 'Nieznany'}`, true);
+                        throw new Error("API_ERROR");
+                    }
+
+                    const aiText = data.candidates[0].content.parts[0].text.trim();
+                    log(`AI odpisało: "${aiText}"`); // <--- TO JEST KLUCZOWE
+
+                    const found = knowledgeBase.find(doc => aiText.includes(doc.id));
                     if (found) { display(found, "AI"); return; }
-                } catch (e) { log("AI zawiodło, sprawdzam lokalnie..."); }
+                    else { log("AI nie dopasowało ID do bazy."); }
+
+                } catch (e) { 
+                    log(`Przełączam na tryb lokalny. (Powód: ${e.message})`); 
+                }
             }
 
-            // Szukanie lokalne
+            // Szukanie lokalne (zapasowe)
             let best = null; let max = 0;
             knowledgeBase.forEach(doc => {
                 let score = 0;
@@ -119,18 +120,20 @@
 
             if (best && max > 3) display(best, "LOKALNE");
             else {
-                document.getElementById('procedure-output').innerHTML = '<span class="text-red-500">BRAK DOPASOWANIA</span>';
-                speak("Brak dopasowania.");
+                document.getElementById('procedure-output').innerHTML = '<span class="text-red-500 uppercase">Odmowa. Brak procedury.</span>';
+                speak("Odmowa. Brak procedury.");
                 toggle(false);
             }
         }
 
         function display(doc, type) {
-            log(`Dopasowano: ${doc.id} (${type})`);
+            log(`Wyświetlam: ${doc.id} (${type})`);
             document.getElementById('procedure-output').innerHTML = `
-                <div class="text-green-500 text-xs mb-2 font-mono border border-green-500 inline-block px-2">${type}: ${doc.id}</div>
-                <div class="text-gray-500 text-sm italic mb-4">${doc.prefix}</div>
-                ${doc.content.replace(/(\d+\.)/g, '<br><span class="text-yellow-500">$1</span>').replace(/\n/g, '<br>')}
+                <div class="mb-4"><span class="source-badge px-2 py-1 text-[10px] font-bold rounded">${type}: ${doc.id}</span></div>
+                <div class="text-gray-500 text-sm italic mb-4 leading-tight">${doc.prefix}</div>
+                <div class="text-left max-w-2xl mx-auto">
+                    ${doc.content.replace(/(\d+\.)/g, '<br><span class="text-yellow-500 font-black">$1</span>').replace(/\n/g, '<br>')}
+                </div>
             `;
             speak(`${doc.prefix} ${doc.content}`);
             toggle(false);
@@ -144,14 +147,14 @@
         function speak(t) {
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(t);
-            u.lang = 'pl-PL';
+            u.lang = 'pl-PL'; u.rate = 1.1;
             window.speechSynthesis.speak(u);
         }
 
         window.addEventListener('load', () => {
             init();
             const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!Speech) return log("Błąd: Brak Speech API", true);
+            if (!Speech) return log("Brak obsługi mowy w przeglądarce!", true);
             const rec = new Speech();
             rec.lang = 'pl-PL';
             rec.onstart = () => document.getElementById('mic-btn').classList.add('listening');
@@ -161,10 +164,14 @@
                 document.getElementById('user-input-display').innerText = `ROZKAZ: ${t.toUpperCase()}`;
                 handleCommand(t);
             };
-            document.getElementById('mic-btn').onclick = () => { window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); rec.start(); };
+            document.getElementById('mic-btn').onclick = () => { 
+                window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); 
+                rec.start(); 
+            };
             document.getElementById('reset-btn').onclick = () => { 
                 window.speechSynthesis.cancel(); 
                 document.getElementById('procedure-output').innerHTML = ''; 
+                document.getElementById('user-input-display').innerText = 'Oczekuję na komendę...';
                 toggle(true); 
             };
         });
