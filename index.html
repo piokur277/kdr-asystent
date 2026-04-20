@@ -3,42 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KDR AI | Gemini 3 Precision</title>
+    <title>KDR AI | Core V11 Compact</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         .listening { animation: pulse 1s infinite; background-color: #ef4444 !important; }
-        body { background-color: #020617; color: #f8fafc; font-family: system-ui, sans-serif; overflow-x: hidden; }
+        body { background-color: #020617; color: #f8fafc; font-family: system-ui, sans-serif; overflow: hidden; }
         .source-badge { display: inline-block; background: #064e3b; border: 1px solid #10b981; color: #34d399; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
         .hidden { display: none !important; }
-        .console-text { font-family: 'Courier New', Courier, monospace; font-size: 9px; line-height: 1.2; }
+        
+        /* KOMPAKTOWA KONSOLA - NIE ZABIERA MIEJSCA */
+        #debug-console {
+            height: 50px;
+            overflow-y: auto;
+            font-size: 8px;
+            line-height: 1.1;
+            -webkit-overflow-scrolling: touch;
+            border-left: 2px solid #ef4444;
+        }
+
+        /* MAKSYMALNA PRZESTRZEŃ NA TEKST */
+        #procedure-scroll-area {
+            height: calc(100vh - 280px);
+            overflow-y: auto;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col p-4 md:p-8">
+<body class="min-h-screen flex flex-col p-4">
 
-    <header class="border-b border-slate-800 pb-4 mb-4 flex justify-between items-start">
-        <div>
-            <h1 class="text-2xl font-black text-red-600 uppercase italic tracking-tighter leading-none">KDR System AI</h1>
-            <div id="debug-console" class="mt-2 bg-black border border-slate-700 p-2 h-24 w-72 overflow-y-auto text-yellow-500 console-text">
-                > System V9 Ready...
-            </div>
+    <header class="border-b border-slate-800 pb-2 mb-2">
+        <div class="flex justify-between items-center">
+            <h1 class="text-xl font-black text-red-600 uppercase italic">KDR AI</h1>
+            <span class="text-[8px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">v11.0 Stable</span>
         </div>
-        <div class="text-right">
-            <span class="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded font-bold uppercase tracking-widest">Gemini 3 Preview</span>
+        
+        <div id="debug-console" class="mt-2 bg-black/50 p-1 font-mono text-yellow-600">
+            > System gotowy. Podaj rozkaz...
         </div>
     </header>
 
-    <main class="flex-grow flex flex-col items-center w-full max-w-4xl mx-auto">
-        <p id="user-input-display" class="text-slate-500 mb-6 italic text-center min-h-[28px]">Inicjalizacja bazy...</p>
-        <div id="procedure-output" class="text-2xl md:text-4xl font-bold leading-tight text-center w-full px-2"></div>
-        <div class="h-40"></div>
+    <main class="flex-grow flex flex-col">
+        <p id="user-input-display" class="text-slate-500 text-sm italic mb-4 text-center min-h-[20px]"></p>
+        
+        <div id="procedure-scroll-area" class="w-full">
+            <div id="procedure-output" class="text-3xl md:text-5xl font-bold leading-tight text-center px-2">
+                </div>
+        </div>
     </main>
 
-    <footer class="fixed bottom-10 left-0 right-0 flex justify-center z-50">
-        <button id="mic-btn" disabled class="w-44 h-44 rounded-full border-4 border-slate-700 bg-slate-900 text-slate-400 font-bold uppercase shadow-2xl active:scale-95 transition-all">
+    <footer class="fixed bottom-6 left-0 right-0 flex justify-center z-50">
+        <button id="mic-btn" disabled class="w-40 h-40 rounded-full border-4 border-slate-700 bg-slate-900 text-slate-400 font-bold uppercase shadow-2xl active:scale-95 transition-all">
             Rozkaz
         </button>
-        <button id="reset-btn" class="hidden w-44 h-44 rounded-full border-4 border-yellow-500 bg-slate-900 text-yellow-500 font-bold uppercase shadow-2xl shadow-yellow-500/20 active:scale-95 transition-all">
+        <button id="reset-btn" class="hidden w-40 h-40 rounded-full border-4 border-yellow-500 bg-slate-900 text-yellow-500 font-bold uppercase shadow-2xl shadow-yellow-500/20 active:scale-95 transition-all">
             Gotowy
         </button>
     </footer>
@@ -55,83 +72,85 @@
         };
 
         async function init() {
-            log("Pobieranie procedur...");
             for (const f of PLIKI) {
                 try {
                     const r = await fetch(`${f}?v=${Date.now()}`);
                     if (r.ok) PROCEDURY.push(await r.json());
-                } catch (e) { log(`Błąd: ${f}`, true); }
+                } catch (e) { log(`Błąd bazy: ${f}`, true); }
             }
             if (PROCEDURY.length > 0) {
-                API_KEY = prompt("Wklej API Key (Gemini 3 Preview):")?.trim();
+                API_KEY = prompt("Wklej API Key:")?.trim();
                 document.getElementById('mic-btn').disabled = false;
                 document.getElementById('mic-btn').classList.replace('text-slate-400', 'text-white');
-                document.getElementById('user-input-display').innerText = "System operacyjny gotowy.";
+                log("Baza wczytana. AI gotowe.");
             }
         }
 
+        async function callAI(query, model) {
+            const ctx = PROCEDURY.map(d => `ID: ${d.id}, Opis: ${d.prefix}`).join("\n");
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: `Dopasuj: "${query}" do ID z listy:\n${ctx}\nZwróć TYLKO ID.` }] }] })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || "Err");
+            return data.candidates[0].content.parts[0].text.trim();
+        }
+
         async function handleCommand(query) {
-            log(`Analiza: "${query}"`);
+            log(`Analiza: ${query}`);
             let found = null;
 
-            // 1. DOKŁADNE DOPASOWANIE DO MODELU GEMINI-3-FLASH-PREVIEW
             if (API_KEY) {
-                log("Łączenie: gemini-3-flash-preview...");
+                // PRÓBA 1: gemini-3-flash-preview (Twoja nazwa z panelu)
                 try {
-                    const ctx = PROCEDURY.map(d => `ID: ${d.id}, Opis: ${d.prefix}`).join("\n");
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`;
-                    
-                    const res = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: `Jesteś dyspozytorem. Dopasuj zgłoszenie: "${query}" do ID z listy:\n${ctx}\nPodaj tylko samo ID.` }] }]
-                        })
-                    });
-                    
-                    const data = await res.json();
-                    if (res.ok) {
-                        const aiId = data.candidates[0].content.parts[0].text.trim();
-                        log(`AI WYBRAŁO: ${aiId}`);
+                    const aiId = await callAI(query, "gemini-3-flash-preview");
+                    found = PROCEDURY.find(d => aiId.includes(d.id));
+                    if (found) { display(found, "AI (G3)"); return; }
+                } catch (e) {
+                    log(`G3 Fail: ${e.message.substring(0,20)}`, true);
+                    // PRÓBA 2: gemini-1.5-flash (zapas)
+                    try {
+                        const aiId = await callAI(query, "gemini-1.5-flash");
                         found = PROCEDURY.find(d => aiId.includes(d.id));
-                        if (found) { display(found, "WERYFIKACJA AI (G3)"); return; }
-                    } else {
-                        log(`BŁĄD: ${data.error?.message.substring(0,30)}`, true);
-                    }
-                } catch (e) { log("AI zawiodło. Próba lokalna..."); }
+                        if (found) { display(found, "AI (G1.5)"); return; }
+                    } catch (e2) { log("AI offline. Tryb lokalny."); }
+                }
             }
 
-            // 2. SZUKANIE LOKALNE (FAIL-SAFE)
+            // SZUKANIE LOKALNE
             let best = null; let max = 0;
             const words = query.toLowerCase().split(/\s+/);
             PROCEDURY.forEach(doc => {
                 let s = 0;
                 doc.keywords.forEach(k => {
-                    const kl = k.toLowerCase();
-                    if (query.includes(kl)) s += 50;
-                    words.forEach(w => { if (w.length > 3 && kl.includes(w)) s += 10; });
+                    if (query.includes(k.toLowerCase())) s += 50;
+                    words.forEach(w => { if (w.length > 3 && k.toLowerCase().includes(w)) s += 10; });
                 });
                 if (s > max) { max = s; best = doc; }
             });
 
-            if (best && max > 5) display(best, "WERYFIKACJA LOKALNA");
+            if (best && max > 5) display(best, "LOKALNA");
             else {
-                document.getElementById('procedure-output').innerHTML = '<span class="text-red-500 font-black">BRAK PROCEDURY W BAZIE</span>';
-                speak("Odmowa. Brak procedury.");
+                document.getElementById('procedure-output').innerHTML = '<span class="text-red-500">BRAK PROCEDURY</span>';
+                speak("Brak procedury.");
                 toggle(false);
             }
         }
 
         function display(doc, type) {
             document.getElementById('procedure-output').innerHTML = `
-                <div class="mb-4"><span class="source-badge">${type}</span></div>
-                <div class="text-slate-500 text-sm italic mb-4 leading-tight">${doc.prefix}</div>
-                <div class="text-left max-w-2xl mx-auto border-t border-slate-800 pt-6">
+                <div class="mb-2"><span class="source-badge">${type}</span></div>
+                <div class="text-slate-500 text-xs italic mb-4">${doc.prefix}</div>
+                <div class="text-left max-w-2xl mx-auto border-t border-slate-800 pt-4">
                     ${doc.content.replace(/(\d+\.)/g, '<br><span class="text-yellow-500 font-black">$1</span>').replace(/\n/g, '<br>')}
                 </div>
             `;
             speak(`${doc.prefix} ${doc.content}`);
             toggle(false);
+            document.getElementById('procedure-scroll-area').scrollTop = 0;
         }
 
         function toggle(s) {
@@ -148,24 +167,21 @@
 
         window.addEventListener('load', () => {
             init();
-            const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const rec = new Speech();
+            const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const rec = new Recognition();
             rec.lang = 'pl-PL';
             rec.onstart = () => document.getElementById('mic-btn').classList.add('listening');
             rec.onend = () => document.getElementById('mic-btn').classList.remove('listening');
             rec.onresult = (e) => {
                 const t = e.results[0][0].transcript.toLowerCase();
-                document.getElementById('user-input-display').innerText = `ROZKAZ: ${t.toUpperCase()}`;
+                document.getElementById('user-input-display').innerText = t.toUpperCase();
                 handleCommand(t);
             };
-            document.getElementById('mic-btn').onclick = () => { 
-                window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); 
-                rec.start(); 
-            };
+            document.getElementById('mic-btn').onclick = () => { window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); rec.start(); };
             document.getElementById('reset-btn').onclick = () => { 
                 window.speechSynthesis.cancel(); 
                 document.getElementById('procedure-output').innerHTML = ''; 
-                document.getElementById('user-input-display').innerText = 'Gotowy.';
+                document.getElementById('user-input-display').innerText = '';
                 toggle(true); 
             };
         });
