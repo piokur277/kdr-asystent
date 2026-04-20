@@ -1,8 +1,6 @@
 {
   "id": "KARTA-Z2-Pozar-EV",
-  "keywords": [
-    "pożar elektryka", "pali się elektryk", "pożar ev", "pożar hybrydy", "pożar baterii"
-  ],
+  "keywords": ["pożar", "pożar elektryka", "pali się elektryk", "pożar ev", "pożar hybrydy", "pożar baterii", "dym z elektryka", "ogień elektryk", "płonie elektryk", "iskry bateria", "pożar akumulatora", "gaszenie elektryka", "dym spod auta", "pożar tesli", "zapłon baterii", "zwarcie elektryk", "niestabilność termiczna", "thermal runaway", "dym podwozie", "ogień bateria", "pali się tesla", "bateria dymi"],
   "prefix": "Zgodnie z Kartą Z2 KG PSP. Pożar pojazdu z napędem elektrycznym.",
   "content": "1. Wyznacz strefę zagrożenia i podejdź od strony nawietrznej.\n2. Pracuj w pełnym sprzęcie ochrony układu oddechowego.\n3. Do gaszenia rozwiniętego pożaru i akumulatora używaj dużej ilości wody.\n4. Podając wodę prądem zwartym zachowaj minimum 5 metrów odległości od instalacji, a prądem rozproszonym minimum 1 metr.\n5. Chłodź akumulator do momentu obniżenia temperatury poniżej 50 stopni Celsjusza.\n6. Kontroluj atmosferę wybuchową wokół pojazdu czujnikiem wielogazowym."
 }
