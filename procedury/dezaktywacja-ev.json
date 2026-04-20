@@ -1,8 +1,6 @@
 {
   "id": "PROC-Dezaktywacja-EV",
-  "keywords": [
-    "dezaktywacja elektryka", "odłączenie prądu", "zabezpieczenie elektryka", "wyłączenie ev", "odłącz zasilanie"
-  ],
+  "keywords": ["dezaktywacja elektryka", "odłączenie prądu", "zabezpieczenie elektryka", "wyłączenie ev", "odłącz zasilanie", "odłącz akumulator", "wyłącz silnik", "tryb ready", "kluczyk elektryk", "bezpiecznik wysokie napięcie", "odcięcie zasilania", "pętla ratownicza", "rozłącznik serwisowy", "zwora serwisowa", "kliny pod koła", "odłącz 12v", "zabezpiecz pojazd", "unieruchomienie elektryka", "wyłącz stacyjkę"],
   "prefix": "Zgodnie z obligatoryjną procedurą dezaktywacji pojazdu elektrycznego.",
   "content": "1. Zablokuj możliwość ruchu pojazdu używając klinów pod koła.\n2. Sprawdź status silnika na desce i wyłącz zapłon przyciskiem START-STOP.\n3. Przestaw dźwignię biegów w pozycję P lub N.\n4. Uruchom hamulec postojowy.\n5. Odłącz akumulator 12 Voltów, zdejmując najpierw biegun ujemny, a potem dodatni."
 }
