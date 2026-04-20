@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KDR Voice Assist | Intuitive V3</title>
+    <title>KDR AI Assist | Gemini v3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-ring {
@@ -11,87 +11,49 @@
             70% { transform: scale(1); box-shadow: 0 0 0 30px rgba(239, 68, 68, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        .listening {
-            animation: pulse-ring 1.5s infinite;
-            background-color: #ef4444 !important; 
-            color: white !important;
-            border-color: #ef4444 !important;
-        }
-        
-        body { 
-            overflow-y: auto; 
-            background-color: #030712;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .source-badge {
-            display: inline-block;
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid #22c55e;
-            color: #4ade80;
-        }
-
+        .listening { animation: pulse-ring 1.5s infinite; background-color: #ef4444 !important; color: white !important; }
+        body { overflow-y: auto; background-color: #030712; -webkit-overflow-scrolling: touch; }
+        .source-badge { display: inline-block; background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #4ade80; }
         .hidden-element { display: none !important; }
-
         .content-spacer { height: 260px; }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
     </style>
 </head>
 <body class="text-gray-100 font-sans min-h-screen flex flex-col p-4 md:p-8">
 
     <header class="sticky top-0 bg-gray-950/90 backdrop-blur-md z-50 flex justify-between items-center border-b border-gray-800 pb-4 mb-4">
         <div>
-            <h1 class="text-2xl font-black tracking-tighter text-red-600 uppercase italic">KDR System</h1>
-            <p class="text-[10px] text-gray-500 font-mono mt-1 uppercase tracking-widest">Procedury Ratownicze v3.0 (Intuitive)</p>
+            <h1 class="text-2xl font-black tracking-tighter text-red-600 uppercase italic">KDR System AI</h1>
+            <p class="text-[10px] text-gray-500 font-mono mt-1 uppercase tracking-widest">Wsparcie Decyzyjne Gemini 1.5</p>
         </div>
-        <div id="status-indicator" class="text-xs font-bold bg-gray-900 px-3 py-1 border border-gray-700 rounded uppercase text-gray-500">
-            Inicjalizacja...
-        </div>
+        <div id="status-indicator" class="text-xs font-bold bg-gray-900 px-3 py-1 border border-gray-700 rounded uppercase text-gray-500">Inicjalizacja...</div>
     </header>
 
     <main class="flex-grow flex flex-col items-center w-full max-w-4xl mx-auto">
-        <p id="user-input-display" class="text-lg text-gray-500 mb-6 text-center italic font-mono min-h-[28px]">
-            Ładowanie bazy danych...
-        </p>
-        
+        <p id="user-input-display" class="text-lg text-gray-500 mb-6 text-center italic font-mono min-h-[28px]">Czekam na klucz API...</p>
         <div id="source-indicator" class="hidden-element text-xs font-bold px-4 py-2 rounded mb-6 source-badge uppercase tracking-tighter"></div>
-
-        <div id="procedure-output" class="text-2xl md:text-5xl font-black leading-tight text-center text-white break-words w-full px-2">
-            </div>
-
+        <div id="procedure-output" class="text-2xl md:text-4xl font-black leading-tight text-center text-white break-words w-full px-2"></div>
         <div class="content-spacer"></div>
     </main>
 
     <footer class="fixed bottom-8 left-0 right-0 flex justify-center z-50 pointer-events-none">
         <div class="pointer-events-auto flex flex-col items-center">
-            
-            <button id="mic-btn" disabled class="w-44 h-44 md:w-52 md:h-52 rounded-full border-4 border-gray-700 text-gray-400 font-black text-xl uppercase flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-[0_20px_50px_rgba(0,0,0,0.7)] transition-all active:scale-90 opacity-50 cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
+            <button id="mic-btn" disabled class="w-44 h-44 rounded-full border-4 border-gray-700 text-gray-400 font-black text-xl uppercase flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-2xl opacity-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
                 <span>Rozkaz</span>
             </button>
-
-            <button id="reset-btn" class="hidden-element w-44 h-44 md:w-52 md:h-52 rounded-full border-4 border-yellow-500 text-yellow-500 font-black text-xl uppercase flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-[0_10px_40px_rgba(234,179,8,0.3)] transition-all active:scale-90">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
+            <button id="reset-btn" class="hidden-element w-44 h-44 rounded-full border-4 border-yellow-500 text-yellow-500 font-black text-xl uppercase flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-2xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                 <span>Gotowy</span>
             </button>
-
         </div>
     </footer>
 
     <script>
+        let GEMINI_API_KEY = ""; 
         let knowledgeBaseDocuments = [];
         const filesToLoad = [
-            'procedury/wypadek-ev.json',
-            'procedury/pozar-ev.json',
-            'procedury/zatopienie-ev.json',
-            'procedury/dezaktywacja-ev.json',
-            'procedury/wypadek-masowy.json'
+            'procedury/wypadek-ev.json', 'procedury/pozar-ev.json', 'procedury/zatopienie-ev.json', 
+            'procedury/dezaktywacja-ev.json', 'procedury/wypadek-masowy.json'
         ];
 
         const micBtn = document.getElementById('mic-btn');
@@ -100,117 +62,105 @@
         const userInputDisplay = document.getElementById('user-input-display');
         const procedureOutput = document.getElementById('procedure-output');
         const sourceIndicator = document.getElementById('source-indicator');
-
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const synth = window.speechSynthesis;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-        async function loadProcedures() {
-            statusIndicator.innerText = 'POBIERANIE...';
+        async function initSystem() {
+            // Bezpieczne wprowadzanie klucza przez użytkownika
+            if(!GEMINI_API_KEY) {
+                GEMINI_API_KEY = prompt("Wpisz swój Gemini API Key:");
+            }
+            
+            statusIndicator.innerText = 'WCZYTYWANIE DANYCH...';
             for (const file of filesToLoad) {
                 try {
-                    const response = await fetch(`${file}?v=${new Date().getTime()}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        knowledgeBaseDocuments.push(data);
-                    }
+                    const res = await fetch(`${file}?v=${new Date().getTime()}`);
+                    if (res.ok) knowledgeBaseDocuments.push(await res.json());
                 } catch (e) { console.error("Błąd pliku:", file); }
             }
-            statusIndicator.innerText = 'GOTOWY';
+            
+            statusIndicator.innerText = 'AI GOTOWE';
             statusIndicator.classList.replace('text-gray-500', 'text-green-500');
-            userInputDisplay.innerText = 'Oczekuję na komendę...';
+            userInputDisplay.innerText = 'System gotowy do analizy...';
             micBtn.disabled = false;
-            micBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            micBtn.classList.remove('opacity-50');
+        }
+
+        async function askGemini(userQuery) {
+            statusIndicator.innerText = 'ANALIZA AI...';
+            
+            const context = knowledgeBaseDocuments.map(d => `ID: ${d.id}, Opis: ${d.prefix}`).join("\n");
+            
+            const promptContent = {
+                contents: [{
+                    parts: [{
+                        text: `Jesteś dyspozytorem Straży Pożarnej. Twoje zadanie to dopasowanie zgłoszenia KDR: "${userQuery}" do konkretnej procedury. Wybierz TYLKO ID procedury z listy poniżej. Jeśli zgłoszenie jest niejasne, wybierz najbardziej prawdopodobne. Jeśli zupełnie nic nie pasuje, odpowiedz "BRAK".\n\nLista procedur:\n${context}`
+                    }]
+                }]
+            };
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(promptContent)
+                });
+                
+                const data = await response.json();
+                const aiAnswer = data.candidates[0].content.parts[0].text.trim();
+                
+                let found = knowledgeBaseDocuments.find(d => aiAnswer.includes(d.id));
+                if (found) {
+                    displayProcedure(found);
+                } else {
+                    procedureOutput.innerHTML = '<span class="text-red-600 font-bold uppercase">AI nie dopasowało procedury. Spróbuj doprecyzować.</span>';
+                    speak("Odmowa. AI nie odnalazło wzorca.");
+                    toggleUI(false);
+                }
+            } catch (error) {
+                procedureOutput.innerHTML = '<span class="text-red-600">BŁĄD SIECI / API.</span>';
+                toggleUI(false);
+            }
+        }
+
+        function displayProcedure(doc) {
+            sourceIndicator.innerText = `ŹRÓDŁO: ${doc.id}`;
+            sourceIndicator.classList.remove('hidden-element');
+            const formatted = doc.content.replace(/(\d+\.)/g, '<br><span class="text-yellow-500 font-black">$1</span>').replace(/\n/g, '<br>');
+            procedureOutput.innerHTML = `<span class="text-gray-500 text-lg block mb-4 italic">${doc.prefix}</span>${formatted}`;
+            speak(`${doc.prefix} ${doc.content}`);
+            toggleUI(false);
+        }
+
+        function toggleUI(showMic) {
+            micBtn.classList.toggle('hidden-element', !showMic);
+            resetBtn.classList.toggle('hidden-element', showMic);
+            statusIndicator.innerText = showMic ? 'AI GOTOWE' : 'AKCJA W TOKU';
+        }
+
+        function speak(text) {
+            if (synth.speaking) synth.cancel();
+            const utt = new SpeechSynthesisUtterance(text);
+            utt.lang = 'pl-PL';
+            synth.speak(utt);
         }
 
         window.addEventListener('load', () => {
-            loadProcedures().then(() => {
-                if (!SpeechRecognition) return;
-
+            initSystem().then(() => {
                 const recognition = new SpeechRecognition();
                 recognition.lang = 'pl-PL';
-                recognition.interimResults = false;
 
-                recognition.onstart = () => {
-                    micBtn.classList.add('listening');
-                    statusIndicator.innerText = 'SŁUCHAM...';
-                };
-
+                recognition.onstart = () => micBtn.classList.add('listening');
+                recognition.onend = () => micBtn.classList.remove('listening');
+                
                 recognition.onresult = (event) => {
-                    const transcript = event.results[0][0].transcript.toLowerCase().trim();
-                    userInputDisplay.innerText = `Komenda: ${transcript.toUpperCase()}`;
-                    searchAndDisplay(transcript);
+                    const transcript = event.results[0][0].transcript;
+                    userInputDisplay.innerText = `ROZKAZ: ${transcript.toUpperCase()}`;
+                    askGemini(transcript);
                 };
-
-                recognition.onend = () => {
-                    micBtn.classList.remove('listening');
-                };
-
-                // INTUICYJNY ALGORYTM WYSZUKIWANIA PUNKTOWEGO
-                function searchAndDisplay(query) {
-                    let bestMatch = null;
-                    let maxScore = 0;
-
-                    knowledgeBaseDocuments.forEach(doc => {
-                        let currentScore = 0;
-                        doc.keywords.forEach(keyword => {
-                            if (query.includes(keyword)) {
-                                // Premiujemy dłuższe frazy jako dokładniejsze
-                                currentScore += (keyword.length * 2);
-                            }
-                        });
-                        
-                        if (currentScore > maxScore) {
-                            maxScore = currentScore;
-                            bestMatch = doc;
-                        }
-                    });
-
-                    // Próg czułości (maxScore > 4, aby uniknąć przypadkowych trafień na pojedynczych literach)
-                    if (bestMatch && maxScore > 4) {
-                        displayProcedure(bestMatch);
-                    } else {
-                        procedureOutput.innerHTML = '<span class="text-red-600">ODMOWA. NIE ZROZUMIAŁEM LUB BRAK PROCEDURY.</span>';
-                        speak("Odmowa. Nie zrozumiałem rozkazu.");
-                        toggleUI(false);
-                    }
-                }
-
-                function displayProcedure(doc) {
-                    sourceIndicator.innerText = `ŹRÓDŁO: ${doc.id}`;
-                    sourceIndicator.classList.remove('hidden-element');
-                    
-                    const formatted = doc.content
-                        .replace(/(\d+\.)/g, '<br><span class="text-yellow-500 font-black">$1</span>')
-                        .replace(/\n/g, '<br>');
-                    
-                    procedureOutput.innerHTML = `<span class="text-gray-500 text-lg block mb-4 italic">${doc.prefix}</span>${formatted}`;
-                    speak(`${doc.prefix} ${doc.content}`);
-                    toggleUI(false); 
-                }
-
-                function toggleUI(showMic) {
-                    if (showMic) {
-                        micBtn.classList.remove('hidden-element');
-                        resetBtn.classList.add('hidden-element');
-                        statusIndicator.innerText = 'GOTOWY';
-                    } else {
-                        micBtn.classList.add('hidden-element');
-                        resetBtn.classList.remove('hidden-element');
-                        statusIndicator.innerText = 'PROCEDURA AKTYWNA';
-                    }
-                }
-
-                function speak(text) {
-                    if (synth.speaking) synth.cancel();
-                    const utt = new SpeechSynthesisUtterance(text);
-                    utt.lang = 'pl-PL';
-                    utt.rate = 1.1; 
-                    synth.speak(utt);
-                }
 
                 micBtn.addEventListener('click', () => {
-                    const unlock = new SpeechSynthesisUtterance('');
-                    synth.speak(unlock);
+                    synth.speak(new SpeechSynthesisUtterance(''));
                     recognition.start();
                 });
 
@@ -218,8 +168,7 @@
                     if (synth.speaking) synth.cancel();
                     procedureOutput.innerHTML = '';
                     sourceIndicator.classList.add('hidden-element');
-                    userInputDisplay.innerText = 'Oczekuję na następny rozkaz...';
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    userInputDisplay.innerText = 'Oczekuję na komendę...';
                     toggleUI(true);
                 });
             });
