@@ -2,8 +2,8 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KDR Voice Assist | Manual Reset</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KDR Voice Assist | Mobile V2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-ring {
@@ -13,56 +13,77 @@
         }
         .listening {
             animation: pulse-ring 1.5s infinite;
-            background-color: #ef4444; 
-            color: white;
-            border-color: #ef4444;
+            background-color: #ef4444 !important; 
+            color: white !important;
+            border-color: #ef4444 !important;
         }
-        body::-webkit-scrollbar { display: none; }
+        
+        body { 
+            overflow-y: auto; 
+            background-color: #030712;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .source-badge {
             display: inline-block;
             background: rgba(34, 197, 94, 0.2);
             border: 1px solid #22c55e;
             color: #4ade80;
         }
+
         .hidden-element { display: none !important; }
+
+        /* Miejsce na dole, żeby tekst nie chował się pod przyciskami */
+        .content-spacer { height: 260px; }
+
+        /* Stylizacja scrollbara dla zachowania estetyki */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-gray-950 text-gray-100 font-sans h-screen flex flex-col justify-between p-4 md:p-8 select-none overflow-hidden">
+<body class="text-gray-100 font-sans min-h-screen flex flex-col p-4 md:p-8">
 
-    <header class="flex justify-between items-center border-b border-gray-800 pb-4">
+    <header class="sticky top-0 bg-gray-950/90 backdrop-blur-md z-50 flex justify-between items-center border-b border-gray-800 pb-4 mb-4">
         <div>
-            <h1 class="text-3xl font-black tracking-widest text-red-600 uppercase">KDR System</h1>
-            <p class="text-xs text-gray-500 font-mono mt-1">TRYB: MANUALNE POTWIERDZENIE (SAFETY)</p>
+            <h1 class="text-2xl font-black tracking-tighter text-red-600 uppercase italic">KDR System</h1>
+            <p class="text-[10px] text-gray-500 font-mono mt-1 uppercase tracking-widest">Procedury Ratownicze v2.0</p>
         </div>
-        <div id="status-indicator" class="text-sm font-bold bg-gray-900 px-4 py-2 border border-gray-700 rounded uppercase text-gray-400">
+        <div id="status-indicator" class="text-xs font-bold bg-gray-900 px-3 py-1 border border-gray-700 rounded uppercase text-gray-500">
             Inicjalizacja...
         </div>
     </header>
 
-    <main class="flex-grow flex flex-col justify-center items-center py-6 w-full max-w-5xl mx-auto">
-        <p id="user-input-display" class="text-xl md:text-2xl text-gray-500 mb-4 text-center italic min-h-[40px] font-mono">
-            Ładowanie...
+    <main class="flex-grow flex flex-col items-center w-full max-w-4xl mx-auto">
+        <p id="user-input-display" class="text-lg text-gray-500 mb-6 text-center italic font-mono min-h-[28px]">
+            Ładowanie bazy danych...
         </p>
         
-        <div id="source-indicator" class="hidden-element text-sm md:text-base font-bold px-4 py-2 rounded mb-6 source-badge uppercase tracking-wider"></div>
+        <div id="source-indicator" class="hidden-element text-xs font-bold px-4 py-2 rounded mb-6 source-badge uppercase tracking-tighter"></div>
 
-        <div id="procedure-output" class="text-2xl md:text-5xl font-black leading-tight text-center text-white break-words w-full"></div>
+        <div id="procedure-output" class="text-2xl md:text-5xl font-black leading-tight text-center text-white break-words w-full px-2">
+            </div>
+
+        <div class="content-spacer"></div>
     </main>
 
-    <footer class="flex justify-center pb-4">
-        <button id="mic-btn" disabled class="w-48 h-48 md:w-56 md:h-56 rounded-full border-4 border-gray-600 text-gray-300 font-bold text-2xl uppercase transition-all duration-200 active:scale-95 flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-2xl opacity-50 cursor-not-allowed">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-            </svg>
-            <span>Rozkaz</span>
-        </button>
+    <footer class="fixed bottom-8 left-0 right-0 flex justify-center z-50 pointer-events-none">
+        <div class="pointer-events-auto flex flex-col items-center">
+            
+            <button id="mic-btn" disabled class="w-44 h-44 md:w-52 md:h-52 rounded-full border-4 border-gray-700 text-gray-400 font-black text-xl uppercase flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-[0_20px_50px_rgba(0,0,0,0.7)] transition-all active:scale-90 opacity-50 cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+                <span>Rozkaz</span>
+            </button>
 
-        <button id="reset-btn" class="hidden-element w-48 h-48 md:w-56 md:h-56 rounded-full border-4 border-yellow-500 text-yellow-500 font-bold text-2xl uppercase transition-all duration-200 active:scale-95 flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-2xl">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>Gotowy</span>
-        </button>
+            <button id="reset-btn" class="hidden-element w-44 h-44 md:w-52 md:h-52 rounded-full border-4 border-yellow-500 text-yellow-500 font-black text-xl uppercase flex flex-col justify-center items-center gap-2 bg-gray-900 shadow-[0_10px_40px_rgba(234,179,8,0.3)] transition-all active:scale-90">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Gotowy</span>
+            </button>
+
+        </div>
     </footer>
 
     <script>
@@ -86,15 +107,18 @@
         const synth = window.speechSynthesis;
 
         async function loadProcedures() {
-            statusIndicator.innerText = 'Pobieranie...';
+            statusIndicator.innerText = 'POBIERANIE...';
             for (const file of filesToLoad) {
                 try {
                     const response = await fetch(`${file}?v=${new Date().getTime()}`);
-                    const data = await response.json();
-                    knowledgeBaseDocuments.push(data);
+                    if (response.ok) {
+                        const data = await response.json();
+                        knowledgeBaseDocuments.push(data);
+                    }
                 } catch (e) { console.error("Błąd pliku:", file); }
             }
-            statusIndicator.innerText = 'Gotowy';
+            statusIndicator.innerText = 'GOTOWY';
+            statusIndicator.classList.replace('text-gray-500', 'text-green-500');
             userInputDisplay.innerText = 'Oczekuję na komendę...';
             micBtn.disabled = false;
             micBtn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -102,54 +126,61 @@
 
         window.addEventListener('load', () => {
             loadProcedures().then(() => {
-                if (!SpeechRecognition) return;
+                if (!SpeechRecognition) {
+                    userInputDisplay.innerText = "Błąd: Brak obsługi głosu w przeglądarce.";
+                    return;
+                }
+
                 const recognition = new SpeechRecognition();
                 recognition.lang = 'pl-PL';
+                recognition.interimResults = false;
 
                 recognition.onstart = () => {
                     micBtn.classList.add('listening');
-                    statusIndicator.innerText = 'Słucham...';
+                    statusIndicator.innerText = 'SŁUCHAM...';
+                    userInputDisplay.innerText = 'Słucham rozkazu...';
                 };
 
                 recognition.onresult = (event) => {
                     const transcript = event.results[0][0].transcript.toLowerCase().trim();
-                    userInputDisplay.innerText = `> ${transcript.toUpperCase()}`;
-                    executeStrictSearch(transcript);
+                    userInputDisplay.innerText = `Komenda: ${transcript.toUpperCase()}`;
+                    searchAndDisplay(transcript);
                 };
 
                 recognition.onend = () => {
                     micBtn.classList.remove('listening');
                 };
 
-                function executeStrictSearch(query) {
+                function searchAndDisplay(query) {
                     let found = knowledgeBaseDocuments.find(doc => doc.keywords.some(k => query.includes(k)));
+                    
                     if (found) {
-                        displayProcedure(found);
+                        sourceIndicator.innerText = `ŹRÓDŁO: ${found.id}`;
+                        sourceIndicator.classList.remove('hidden-element');
+                        
+                        const formatted = found.content
+                            .replace(/(\d+\.)/g, '<br><span class="text-yellow-500 font-black">$1</span>')
+                            .replace(/\n/g, '<br>');
+                        
+                        procedureOutput.innerHTML = `<span class="text-gray-500 text-lg block mb-4 italic">${found.prefix}</span>${formatted}`;
+                        speak(`${found.prefix} ${found.content}`);
+                        toggleUI(false); 
                     } else {
-                        procedureOutput.innerHTML = '<span class="text-red-500 uppercase">Odmowa. Brak danych.</span>';
-                        speak("Odmowa. Brak danych.");
-                        toggleButtons(false); // Pokaż przycisk powrotu nawet przy błędzie
+                        procedureOutput.innerHTML = '<span class="text-red-600">ODMOWA. BRAK PROCEDURY W BAZIE.</span>';
+                        speak("Odmowa. Brak procedury w bazie danych.");
+                        toggleUI(false);
                     }
                 }
 
-                function displayProcedure(doc) {
-                    sourceIndicator.innerText = `WERYFIKACJA: ${doc.id}`;
-                    sourceIndicator.classList.remove('hidden-element');
-                    const formatted = doc.content.replace(/(\d+\.)/g, '<span class="text-yellow-500">$1</span>').replace(/\n/g, '<br>');
-                    procedureOutput.innerHTML = `<span class="text-gray-400 text-xl block mb-2">${doc.prefix}</span>${formatted}`;
-                    speak(`${doc.prefix} ${doc.content}`);
-                    toggleButtons(false); // Ukryj mikrofon, pokaż przycisk Gotowy
-                }
-
-                function toggleButtons(showMic) {
+                function toggleUI(showMic) {
                     if (showMic) {
                         micBtn.classList.remove('hidden-element');
                         resetBtn.classList.add('hidden-element');
-                        statusIndicator.innerText = 'Gotowy';
+                        statusIndicator.innerText = 'GOTOWY';
                     } else {
                         micBtn.classList.add('hidden-element');
                         resetBtn.classList.remove('hidden-element');
-                        statusIndicator.innerText = 'Procedura aktywna';
+                        statusIndicator.innerText = 'TRYB PROCEDURY';
                     }
                 }
 
@@ -157,23 +188,24 @@
                     if (synth.speaking) synth.cancel();
                     const utt = new SpeechSynthesisUtterance(text);
                     utt.lang = 'pl-PL';
+                    utt.rate = 1.1; 
                     synth.speak(utt);
                 }
 
-                // Obsługa przycisku mikrofonu
                 micBtn.addEventListener('click', () => {
+                    // Odblokowanie mowy na iOS
                     const unlock = new SpeechSynthesisUtterance('');
                     synth.speak(unlock);
                     recognition.start();
                 });
 
-                // Obsługa przycisku powrotu
                 resetBtn.addEventListener('click', () => {
                     if (synth.speaking) synth.cancel();
                     procedureOutput.innerHTML = '';
                     sourceIndicator.classList.add('hidden-element');
-                    userInputDisplay.innerText = 'Oczekuję na następny rozkaz...';
-                    toggleButtons(true);
+                    userInputDisplay.innerText = 'Oczekuję na następną komendę...';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    toggleUI(true);
                 });
             });
         });
