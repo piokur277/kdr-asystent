@@ -516,7 +516,8 @@
             isListening: false,
             isBusy: false,
             hasSpeechResult: false,
-            retryAfterAbort: false
+            retryAfterAbort: false,
+            listenWatchdogId: null
         };
 
         const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -547,6 +548,10 @@
 
         function setMicEnabled(enabled) {
             micBtn.disabled = !enabled;
+        }
+
+        function updateMicPresentation(label = "Rozkaz") {
+            micBtn.textContent = label;
         }
 
         function toggle(showMic) {
@@ -628,6 +633,22 @@
             log("Sesja mikrofonu zamknieta.");
         }
 
+        function clearListeningWatchdog() {
+            if (!state.listenWatchdogId) return;
+            clearTimeout(state.listenWatchdogId);
+            state.listenWatchdogId = null;
+        }
+
+        function resetListeningUi() {
+            clearListeningWatchdog();
+            state.isListening = false;
+            state.isBusy = false;
+            state.retryAfterAbort = false;
+            micBtn.classList.remove("listening");
+            updateMicPresentation("Rozkaz");
+            setMicEnabled(true);
+        }
+
         async function ensureMicrophoneAccess() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 throw new Error("Urzadzenie nie udostepnia getUserMedia");
@@ -650,15 +671,6 @@
             return state.micStream;
         }
 
-        function speak(text) {
-            if (!("speechSynthesis" in window)) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = "pl-PL";
-            utterance.rate = 1.05;
-            window.speechSynthesis.speak(utterance);
-        }
-
         function renderEmptyState(message) {
             procedureOutput.innerHTML = `<div class="empty-state">${escapeHtml(message)}</div>`;
         }
@@ -677,9 +689,7 @@
                 <div class="procedure-card">${lines}</div>
             `;
 
-            toggle(false);
             procedureScrollArea.scrollTop = 0;
-            speak(`${doc.prefix}. ${doc.content}`);
         }
 
         function scoreProcedure(query, procedure) {
@@ -774,8 +784,6 @@
 
             if (!procedure) {
                 renderEmptyState("Brak danych");
-                speak("Brak procedury.");
-                toggle(false);
                 return;
             }
 
@@ -783,8 +791,7 @@
         }
 
         function openKeyboardVoiceFallback(reason = "") {
-            toggle(true);
-            setMicEnabled(true);
+            resetListeningUi();
             manualQuery.focus();
             manualQuery.click();
 
@@ -811,8 +818,16 @@
                 state.isListening = true;
                 state.hasSpeechResult = false;
                 micBtn.classList.add("listening");
-                setMicEnabled(false);
+                updateMicPresentation("Nasluch...");
                 log("Mow teraz...");
+
+                clearListeningWatchdog();
+                state.listenWatchdogId = setTimeout(() => {
+                    if (!state.hasSpeechResult && state.isListening) {
+                        try { recognition.abort(); } catch (error) {}
+                        openKeyboardVoiceFallback("Safari nie zwrocil wyniku z mikrofonu. Uzyj pola Szukaj.");
+                    }
+                }, IS_IOS ? 5000 : 8000);
             };
 
             recognition.onaudiostart = () => {
@@ -829,53 +844,48 @@
 
             recognition.onresult = event => {
                 state.hasSpeechResult = true;
+                clearListeningWatchdog();
                 const transcript = (event.results?.[0]?.[0]?.transcript || "").trim().toLowerCase();
+                userInputDisplay.textContent = transcript;
+                resetListeningUi();
                 handleCommand(transcript);
             };
 
             recognition.onerror = event => {
                 const code = event.error || "unknown";
+                clearListeningWatchdog();
 
                 if (code === "aborted") {
                     log("Safari przerwal nasluch.", true);
-                    if (IS_IOS && !state.retryAfterAbort) {
-                        state.retryAfterAbort = true;
-                    }
+                    resetListeningUi();
                     return;
                 }
 
                 if (code === "not-allowed" || code === "service-not-allowed") {
                     log("Brak zgody na mikrofon. Nadaj uprawnienie dla tej witryny w Safari.", true);
+                    resetListeningUi();
                     return;
                 }
 
                 if (code === "audio-capture") {
                     log("Urzadzenie nie przekazuje dzwieku z mikrofonu.", true);
+                    openKeyboardVoiceFallback("Mikrofon przegladarki nie przekazuje dzwieku. Uzyj pola Szukaj.");
                     return;
                 }
 
                 if (code === "no-speech") {
                     log("Nie wykryto mowy. Sprobuj ponownie.", true);
+                    resetListeningUi();
                     return;
                 }
 
                 log(`Blad rozpoznawania: ${code}`, true);
+                resetListeningUi();
             };
 
             recognition.onend = () => {
-                micBtn.classList.remove("listening");
-                state.isListening = false;
-
-                if (state.retryAfterAbort && !state.hasSpeechResult) {
-                    state.retryAfterAbort = false;
-                    setTimeout(() => startListening(true), 180);
-                    return;
-                }
-
-                state.retryAfterAbort = false;
-                if (micBtn.classList.contains("hidden") === false) {
-                    setMicEnabled(true);
-                }
+                clearListeningWatchdog();
+                resetListeningUi();
 
                 if (!IS_IOS) {
                     releaseMicStream();
@@ -903,8 +913,6 @@
             state.isBusy = true;
 
             try {
-                window.speechSynthesis?.cancel();
-
                 if (IS_IOS) {
                     await ensureMicrophoneAccess();
                     if (!isRetry) log("Sesja audio iPhone gotowa.");
@@ -916,8 +924,6 @@
                     ? "Nasluch juz trwa."
                     : `Start nieudany: ${error.message}`;
                 openKeyboardVoiceFallback(message);
-            } finally {
-                state.isBusy = false;
             }
         }
 
@@ -1004,10 +1010,10 @@
         });
 
         resetBtn.addEventListener("click", () => {
-            window.speechSynthesis?.cancel();
             procedureOutput.innerHTML = '<div class="empty-state">Oczekiwanie na rozkaz</div>';
             userInputDisplay.textContent = "";
             toggle(true);
+            resetListeningUi();
             setMicEnabled(true);
             manualQuery.focus();
         });
@@ -1024,7 +1030,7 @@
         voiceHelpBtn.addEventListener("click", showIosHelp);
 
         window.addEventListener("pagehide", () => {
-            window.speechSynthesis?.cancel();
+            clearListeningWatchdog();
             if (state.recognition && state.isListening) {
                 try { state.recognition.abort(); } catch (error) {}
             }
