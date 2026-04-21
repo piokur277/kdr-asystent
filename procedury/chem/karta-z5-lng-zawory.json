@@ -1,0 +1,10 @@
+{
+  "id": "KARTA-CHEM-Z5-LNG-ZAWORY",
+  "zrodlo": "Zasady postępowania podczas zdarzeń z LNG, KG PSP",
+  "data_aktualizacji": "2025-12",
+  "keywords": [
+    "gwizda z cysterny", "syk z cysterny", "wyrzut z zaworu bezpieczeństwa", "zawór zrzutowy lng", "puszcza ciśnienie lng", "emisja z zaworów lng", "nadciśnienie lng"
+  ],
+  "prefix": "Karta Z5 - Emisja gazu LNG przez zawory bezpieczeństwa (Zrzut ciśnienia).",
+  "content": "1. Sytuacja dotyczy okresowego wzrostu ciśnienia, które jest wyrzucane przez specjalne kominy na dachu cysterny. Może to być zjawisko samoczynne.\n2. Wyznacz strefę 150 m i usuń wszystkie źródła iskrzenia/zapłonu.\n3. Sprawdź całą cysternę kamerą termowizyjną. Jeśli widoczne jest nagłe miejscowe wychłodzenie płaszcza - świadczy to o rozszczelnieniu powłoki próżniowej.\n4. Stale monitoruj atmosferę eksplozymetrem (alarmuj przy 2,5% objętości).\n5. Jeśli emisja nie ustępuje, sytuację należy traktować jako regularny wyciek i zastosować działania ograniczające chmurę (kurtyny wodne, wentylatory Ex) - przejdź do procedury Z4.\n6. Jeżeli oprócz wyrzutu gazu z zaworu obserwujesz wyciek fazy płynnej, natychmiast wdróż procedurę wycieku (Z4)."
+}
