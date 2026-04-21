@@ -1,0 +1,10 @@
+{
+  "id": "KARTA-CHEM-Z1-LNG-POZAR-ZEW",
+  "zrodlo": "Zasady postępowania podczas zdarzeń z LNG, KG PSP",
+  "data_aktualizacji": "2025-12",
+  "keywords": [
+    "pożar cysterny lng", "pożar zewnętrzny lng", "ogrzewanie cysterny", "pali się obok cysterny", "pożar gazu", "cysterna z gazem", "bleve lng", "chłodzenie cysterny lng", "skroplony gaz ziemny"
+  ],
+  "prefix": "Karta Z1 - Pożar zewnętrzny podgrzewający cysternę LNG bez wycieku gazu.",
+  "content": "1. Wyznacz strefę ewakuacji dla osób postronnych (1,5 km) oraz strefę zagrożenia dla ratowników (300 m).\n2. Dokonaj rozpoznania zza tarczy balistycznej (odczyt aparatury, widoczne uszkodzenia).\n3. Podawaj bezobsługowe prądy wody w celu intensywnego chłodzenia (wydajność min. 10 l/min/m2). Schładzanie ma sens tylko przy nienaruszonej powłoce cysterny.\n4. Chłodzenie jest skuteczne, gdy podawana woda nie odparowuje z powierzchni.\n5. Kontroluj temperaturę płaszcza (pirometr, termowizja).\n6. Jeśli woda odparowuje, widać odkształcenia, słychać dudnienie/syczenie lub zadziałał zawór bezpieczeństwa - natychmiast wycofaj ratowników na bezpieczną odległość, zostawiając działka bezobsługowe.\n7. Przystąp do gaszenia pożaru zewnętrznego.\n8. Po zgaśnięciu płomienia chłódź cysternę jeszcze przez 10-15 minut.\n9. W razie stwierdzenia uszkodzeń armatury, uszczelnij wyciek (kliny, włóknina) i wezwij SPOT do przepompowania LNG."
+}
