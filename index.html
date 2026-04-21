@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KDR AI | Core V15 iOS Fix</title>
+    <title>KDR AI | Core V16 Safari Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -30,10 +30,10 @@
     <header class="flex-none border-b border-slate-800 pb-1 mb-2">
         <div class="flex justify-between items-baseline">
             <h1 class="text-lg font-black text-red-600 uppercase italic tracking-tighter">KDR AI SYSTEM</h1>
-            <span class="text-[8px] text-slate-500 uppercase">v15.0 iOS FIX</span>
+            <span class="text-[8px] text-slate-500 uppercase">v16.0 SAFARI</span>
         </div>
         <div id="debug-console" class="mt-1 p-1 font-mono text-yellow-600">
-            > System V15 (Zgodność Apple) gotowy.
+            > System V16 gotowy.
         </div>
     </header>
 
@@ -141,7 +141,7 @@
                 <div class="text-left border-t border-slate-800 pt-4">
                     ${doc.content.replace(/(\d+\.)/g, '<br><span class="text-yellow-500 font-black">$1</span>').replace(/\n/g, '<br>')}
                 </div>
-                <div class="h-64 w-full text-transparent">END_OF_DOC</div> 
+                <div class="h-64 w-full text-transparent">END</div> 
             `;
             speak(`${doc.prefix}. ${doc.content}`);
             toggle(false);
@@ -160,31 +160,31 @@
             window.speechSynthesis.speak(u);
         }
 
-        // ZMIANA POD iOS: Inicjalizacja mikrofonu na kliknięcie
+        // --- ZMIANA V16 (Apple Safari Fix) ---
         window.addEventListener('load', () => {
             init();
             
             document.getElementById('mic-btn').onclick = () => { 
                 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if(!Recognition) {
-                    log("Brak API mowy na tym urządzeniu/przeglądarce.", true);
+                    log("Brak API mowy na tym urządzeniu.", true);
                     return;
                 }
                 
                 try {
                     const rec = new Recognition();
                     rec.lang = 'pl-PL';
-                    rec.interimResults = false; // iOS preferuje false
+                    rec.interimResults = false; 
                     rec.maxAlternatives = 1;
 
                     rec.onstart = () => {
                         document.getElementById('mic-btn').classList.add('listening');
-                        log("Nasłuchuję...");
+                        log("Mów teraz...");
                     };
 
                     rec.onerror = (e) => {
                         document.getElementById('mic-btn').classList.remove('listening');
-                        log(`BŁĄD MIKROFONU (iOS): ${e.error}`, true);
+                        log(`BŁĄD (iOS): ${e.error}`, true);
                     };
 
                     rec.onend = () => {
@@ -197,10 +197,11 @@
                         handleCommand(t);
                     };
 
-                    window.speechSynthesis.cancel(); // Przerywamy ewentualne mówienie, by zwolnić kartę audio
-                    rec.start(); 
+                    // Opóźnienie 100ms daje Safari czas na odblokowanie interfejsu audio
+                    setTimeout(() => { rec.start(); }, 100);
+
                 } catch (err) {
-                    log(`Crash mikrofonu: ${err.message}`, true);
+                    log(`Crash: ${err.message}`, true);
                 }
             };
 
