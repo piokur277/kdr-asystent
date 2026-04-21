@@ -333,92 +333,6 @@
             margin-top: auto;
         }
 
-        body.ios {
-            padding: 8px;
-        }
-
-        body.ios .app-shell {
-            height: calc(100vh - 16px);
-        }
-
-        body.ios .header {
-            padding-bottom: 6px;
-        }
-
-        body.ios .title {
-            font-size: 1.05rem;
-        }
-
-        body.ios .version {
-            font-size: 0.54rem;
-            letter-spacing: 0.08em;
-        }
-
-        body.ios .toolbar {
-            gap: 6px;
-            margin-top: 8px;
-        }
-
-        body.ios .toolbar-btn,
-        body.ios .search-btn,
-        body.ios .api-input,
-        body.ios .manual-input {
-            padding: 9px 11px;
-            font-size: 13px;
-        }
-
-        body.ios #debug-console {
-            margin-top: 8px;
-            height: 50px;
-            padding: 6px 8px;
-            font-size: 10px;
-        }
-
-        body.ios .main {
-            gap: 8px;
-            padding-top: 8px;
-        }
-
-        body.ios .status-line {
-            min-height: 14px;
-            font-size: 10px;
-        }
-
-        body.ios .output-wrap {
-            padding: 6px 2px 132px;
-        }
-
-        body.ios .footer {
-            bottom: 12px;
-        }
-
-        body.ios .mic-btn,
-        body.ios .reset-btn {
-            width: min(28vw, 112px);
-            height: min(28vw, 112px);
-            font-size: 0.86rem;
-        }
-
-        body.ios.result-mode .output-wrap {
-            padding-bottom: 76px;
-        }
-
-        body.ios.result-mode .footer {
-            justify-content: flex-end;
-            padding-right: 12px;
-        }
-
-        body.ios.result-mode .reset-btn {
-            width: auto;
-            min-width: 108px;
-            height: 42px;
-            padding: 0 16px;
-            border-width: 2px;
-            border-radius: 999px;
-            font-size: 0.82rem;
-            box-shadow: 0 0 26px rgba(234, 179, 8, 0.2);
-        }
-
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.7; transform: scale(0.985); }
@@ -599,7 +513,7 @@
                     "wiele ofiar",
                     "mci"
                 ],
-                content: "1. Ustal dowodzenie, sektory dzialan i kanaly lacznosci juz w pierwszej fazie akcji.\n2. Wykonaj segregacje medyczna i oddziel dzialania ratownicze od rozpoznania technicznego pojazdow.\n3. Kazdy pojazd elektryczny oznacz i przypisz do osobnego rozpoznania zagrozen energetycznych.\n4. Wprowadz strefe dla pojazdow podejrzanych o uszkodzenie baterii trakcyjnej poza glownym obszarem medycznym.\n5. Priorytetem jest zycie poszkodowanych, ale bez wchodzenia ratownikow w strefe niekontrolowanego pozaru lub napiecia.\n6. Zorganizuj osobne miejsce dla dekontaminacji, chlodzenia pojazdow i czasowej izolacji uszkodzonych EV.\n7. Po opanowaniu fazy medycznej przejdz do stabilizacji, dezaktywacji i przygotowania pojazdow do holowania."
+                content: "1. Ustal dowodzenie, sektory dzialan i kanaly lacznosci juz w pierwszej fazie akcji.\n2. Wykonaj segregacje medyczna i oddziel dzialania ratownicze od rozpoznania technicznego pojazdow.\n3. Kazdy pojazd elektryczny oznacz i przypisz do osobnego rozpoznania zagrozen energetycznych.\n4. Wprowadz strefe dla pojazdow podejrzanych o uszkodzenie baterii trakcyjnej poza glownym obszarem medycznym.\n5. Priorytetem jest zycie poszkodowanych, ale bez wchodzenia ratownikow w strefie niekontrolowanego pozaru lub napiecia.\n6. Zorganizuj osobne miejsce dla dekontaminacji, chlodzenia pojazdow i czasowej izolacji uszkodzonych EV.\n7. Po opanowaniu fazy medycznej przejdz do stabilizacji, dezaktywacji i przygotowania pojazdow do holowania."
             }
         ];
 
@@ -649,10 +563,6 @@
 
         function updateMicPresentation(label = "Rozkaz") {
             micBtn.textContent = label;
-        }
-
-        function setResultMode(active) {
-            document.body.classList.toggle("result-mode", active);
         }
 
         function toggle(showMic) {
@@ -774,7 +684,6 @@
         }
 
         function renderEmptyState(message) {
-            setResultMode(false);
             procedureOutput.innerHTML = `<div class="empty-state">${escapeHtml(message)}</div>`;
         }
 
@@ -792,8 +701,6 @@
                 <div class="procedure-card">${lines}</div>
             `;
 
-            setResultMode(true);
-            toggle(false);
             procedureScrollArea.scrollTop = 0;
         }
 
@@ -866,7 +773,12 @@
                     const aiMatch = state.procedury.find(item => aiId.includes(item.id));
                     if (aiMatch) return { procedure: aiMatch, source: "AI" };
                 } catch (error) {
-                    log(`AI niedostepne: ${error.message}`, true);
+                    const msg = (error.message || "").toLowerCase();
+                    if (msg.includes("quota") || msg.includes("billing") || msg.includes("429")) {
+                        log("AI chwilowo niedostepne z powodu limitu. Uzywam bazy lokalnej.", true);
+                    } else {
+                        log(`AI niedostepne: ${error.message}`, true);
+                    }
                 }
             }
 
@@ -897,8 +809,6 @@
         }
 
         function openKeyboardVoiceFallback(reason = "") {
-            setResultMode(false);
-            toggle(true);
             resetListeningUi();
             manualQuery.focus();
             manualQuery.click();
@@ -1004,8 +914,13 @@
             return recognition;
         }
 
-        async function startListening(isRetry = false) {
+        async function startListening() {
             if (state.isListening || state.isBusy) return;
+
+            if (IS_IOS) {
+                openKeyboardVoiceFallback("Na iOS przycisk Rozkaz otwiera pole Szukaj pod mikrofon klawiatury.");
+                return;
+            }
 
             const recognition = buildRecognition();
             if (!recognition) {
@@ -1021,11 +936,7 @@
             state.isBusy = true;
 
             try {
-                if (IS_IOS) {
-                    await ensureMicrophoneAccess();
-                    if (!isRetry) log("Sesja audio iPhone gotowa.");
-                }
-
+                await ensureMicrophoneAccess();
                 recognition.start();
             } catch (error) {
                 const message = error?.name === "InvalidStateError"
@@ -1072,8 +983,8 @@
 
         function showIosHelp() {
             const help = IS_IOS
-                ? "iOS: pole API otworzysz przyciskiem Pokaz API. Jesli przycisk Rozkaz nie dziala w Safari, nacisnij Rozkaz, a potem uzyj mikrofonu z klawiatury iPhone w polu wpisywania. To najpewniejszy fallback na iOS."
-                : "Na urzadzeniach innych niz iOS mikrofon zwykle dziala po jednorazowym pozwoleniu dla tej witryny.";
+                ? "iOS: Rozkaz otwiera pole Szukaj, bo to ono stabilnie wspiera mikrofon z klawiatury iPhone. Wyszukiwanie glosowe przez klawiature dziala, a wynik nie jest czytany przez urzadzenie."
+                : "Na urzadzeniach innych niz iOS Rozkaz korzysta z mikrofonu przegladarki.";
             alert(help);
         }
 
@@ -1088,10 +999,7 @@
                     return;
                 }
 
-                if (Date.now() - lastTouchTime < 500) {
-                    return;
-                }
-
+                if (Date.now() - lastTouchTime < 500) return;
                 startListening();
             };
 
@@ -1101,15 +1009,8 @@
 
         async function init() {
             await loadProcedures();
-            document.body.classList.toggle("ios", IS_IOS);
             updateApiButton();
             renderEmptyState("Oczekiwanie na rozkaz");
-
-            const recognitionSupported = Boolean(getRecognitionCtor());
-            if (!recognitionSupported) {
-                log("Brak SpeechRecognition. Rozkaz przelaczy Cie do pola tekstowego.", true);
-            }
-
             setMicEnabled(true);
             log("Gotowosc bojowa.");
 
@@ -1128,10 +1029,10 @@
         resetBtn.addEventListener("click", () => {
             procedureOutput.innerHTML = '<div class="empty-state">Oczekiwanie na rozkaz</div>';
             userInputDisplay.textContent = "";
-            setResultMode(false);
             toggle(true);
             resetListeningUi();
             setMicEnabled(true);
+            manualQuery.value = "";
             manualQuery.focus();
         });
 
