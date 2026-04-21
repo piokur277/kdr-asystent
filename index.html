@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KDR AI | Core V16 Safari Fix</title>
+    <title>KDR AI | Core V18 Ironclad</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -30,10 +30,10 @@
     <header class="flex-none border-b border-slate-800 pb-1 mb-2">
         <div class="flex justify-between items-baseline">
             <h1 class="text-lg font-black text-red-600 uppercase italic tracking-tighter">KDR AI SYSTEM</h1>
-            <span class="text-[8px] text-slate-500 uppercase">v16.0 SAFARI</span>
+            <span class="text-[8px] text-slate-500 uppercase">v18.0 IRONCLAD</span>
         </div>
         <div id="debug-console" class="mt-1 p-1 font-mono text-yellow-600">
-            > System V16 gotowy.
+            > System V18. Weryfikacja protokołów...
         </div>
     </header>
 
@@ -41,8 +41,7 @@
         <p id="user-input-display" class="flex-none text-slate-400 text-xs italic mb-2 text-center uppercase font-bold tracking-tighter h-4"></p>
         
         <div id="procedure-scroll-area" class="flex-1 overflow-y-auto w-full">
-            <div id="procedure-output" class="text-3xl md:text-5xl font-black leading-tight text-center px-1">
-                </div>
+            <div id="procedure-output" class="text-3xl md:text-5xl font-black leading-tight text-center px-1"></div>
         </div>
     </main>
 
@@ -73,14 +72,14 @@
                 try {
                     const r = await fetch(`${f}?v=${Date.now()}`);
                     if (r.ok) PROCEDURY.push(await r.json());
-                } catch (e) { log(`Błąd bazy`, true); }
+                } catch (e) { log(`Błąd bazy: ${f}`, true); }
             }
             if (PROCEDURY.length > 0) {
                 API_KEY = prompt("Wklej API Key:")?.trim();
                 const mic = document.getElementById('mic-btn');
                 mic.disabled = false;
                 mic.classList.replace('text-slate-400', 'text-white');
-                log("Gotowość bojowa.");
+                log("System w pełni operacyjny.");
             }
         }
 
@@ -98,7 +97,7 @@
         }
 
         async function handleCommand(query) {
-            log("Analiza...");
+            log("Przetwarzanie danych...");
             let found = null;
 
             if (API_KEY) {
@@ -111,7 +110,7 @@
                         const aiId = await callAI(query, "gemini-1.5-flash");
                         found = PROCEDURY.find(d => aiId.includes(d.id));
                         if (found) { display(found, "AI (G1.5)"); return; }
-                    } catch (e2) { log("AI błąd."); }
+                    } catch (e2) { log("AI offline."); }
                 }
             }
 
@@ -128,7 +127,7 @@
 
             if (best && max > 5) display(best, "LOKALNA");
             else {
-                document.getElementById('procedure-output').innerHTML = '<span class="text-red-600">BRAK DANYCH</span>';
+                document.getElementById('procedure-output').innerHTML = '<span class="text-red-600">BRAK PROCEDURY</span>';
                 speak("Brak procedury.");
                 toggle(false);
             }
@@ -160,48 +159,54 @@
             window.speechSynthesis.speak(u);
         }
 
-        // --- ZMIANA V16 (Apple Safari Fix) ---
+        // --- V18: DYNAMICZNA INICJALIZACJA MIKROFONU (Tarcza na iOS) ---
+        let currentRec = null;
+
         window.addEventListener('load', () => {
             init();
             
             document.getElementById('mic-btn').onclick = () => { 
-                const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if(!Recognition) {
-                    log("Brak API mowy na tym urządzeniu.", true);
-                    return;
-                }
+                const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!Speech) return log("Twoje urządzenie nie wspiera Web Speech API.", true);
                 
+                // Zawsze czyścimy starą instancję, zanim stworzymy nową
+                if (currentRec) {
+                    try { currentRec.abort(); } catch(e) {}
+                }
+
                 try {
-                    const rec = new Recognition();
-                    rec.lang = 'pl-PL';
-                    rec.interimResults = false; 
-                    rec.maxAlternatives = 1;
+                    currentRec = new Speech();
+                    currentRec.lang = 'pl-PL';
+                    currentRec.interimResults = false;
+                    currentRec.maxAlternatives = 1;
 
-                    rec.onstart = () => {
+                    currentRec.onstart = () => {
                         document.getElementById('mic-btn').classList.add('listening');
-                        log("Mów teraz...");
+                        log("Nasłuchuję...");
                     };
 
-                    rec.onerror = (e) => {
+                    currentRec.onerror = (e) => {
                         document.getElementById('mic-btn').classList.remove('listening');
-                        log(`BŁĄD (iOS): ${e.error}`, true);
+                        // Tłumaczenie błędów iOS na język strażacki
+                        if(e.error === 'not-allowed') log("BŁĄD: Zezwól na mikrofon w Ustawieniach iOS!", true);
+                        else if(e.error === 'aborted') log("BŁĄD: iOS ubił proces. Kliknij jeszcze raz.", true);
+                        else log(`BŁĄD MIC: ${e.error}`, true);
                     };
 
-                    rec.onend = () => {
+                    currentRec.onend = () => {
                         document.getElementById('mic-btn').classList.remove('listening');
                     };
 
-                    rec.onresult = (e) => {
+                    currentRec.onresult = (e) => {
                         const t = e.results[0][0].transcript.toLowerCase();
                         document.getElementById('user-input-display').innerText = t;
                         handleCommand(t);
                     };
 
-                    // Opóźnienie 100ms daje Safari czas na odblokowanie interfejsu audio
-                    setTimeout(() => { rec.start(); }, 100);
-
+                    // Uruchomienie musi nastąpić w tej samej funkcji co kliknięcie!
+                    currentRec.start(); 
                 } catch (err) {
-                    log(`Crash: ${err.message}`, true);
+                    log(`Krytyczny błąd mikrofonu: ${err.message}`, true);
                 }
             };
 
