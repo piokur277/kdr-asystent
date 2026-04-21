@@ -773,7 +773,12 @@
                     const aiMatch = state.procedury.find(item => aiId.includes(item.id));
                     if (aiMatch) return { procedure: aiMatch, source: "AI" };
                 } catch (error) {
-                    log(`AI niedostepne: ${error.message}`, true);
+                    const msg = (error.message || "").toLowerCase();
+                    if (msg.includes("quota") || msg.includes("billing") || msg.includes("429")) {
+                        log("AI chwilowo niedostepne z powodu limitu. Uzywam bazy lokalnej.", true);
+                    } else {
+                        log(`AI niedostepne: ${error.message}`, true);
+                    }
                 }
             }
 
@@ -909,8 +914,13 @@
             return recognition;
         }
 
-        async function startListening(isRetry = false) {
+        async function startListening() {
             if (state.isListening || state.isBusy) return;
+
+            if (IS_IOS) {
+                openKeyboardVoiceFallback("Na iOS przycisk Rozkaz otwiera pole Szukaj pod mikrofon klawiatury.");
+                return;
+            }
 
             const recognition = buildRecognition();
             if (!recognition) {
@@ -926,11 +936,7 @@
             state.isBusy = true;
 
             try {
-                if (IS_IOS) {
-                    await ensureMicrophoneAccess();
-                    if (!isRetry) log("Sesja audio iPhone gotowa.");
-                }
-
+                await ensureMicrophoneAccess();
                 recognition.start();
             } catch (error) {
                 const message = error?.name === "InvalidStateError"
@@ -977,8 +983,8 @@
 
         function showIosHelp() {
             const help = IS_IOS
-                ? "iOS: pole API otworzysz przyciskiem Pokaz API. Jesli przycisk Rozkaz nie dziala w Safari, nacisnij Rozkaz, a potem uzyj mikrofonu z klawiatury iPhone w polu wpisywania. To najpewniejszy fallback na iOS."
-                : "Na urzadzeniach innych niz iOS mikrofon zwykle dziala po jednorazowym pozwoleniu dla tej witryny.";
+                ? "iOS: Rozkaz otwiera pole Szukaj, bo to ono stabilnie wspiera mikrofon z klawiatury iPhone. Wyszukiwanie glosowe przez klawiature dziala, a wynik nie jest czytany przez urzadzenie."
+                : "Na urzadzeniach innych niz iOS Rozkaz korzysta z mikrofonu przegladarki.";
             alert(help);
         }
 
@@ -993,10 +999,7 @@
                     return;
                 }
 
-                if (Date.now() - lastTouchTime < 500) {
-                    return;
-                }
-
+                if (Date.now() - lastTouchTime < 500) return;
                 startListening();
             };
 
@@ -1008,12 +1011,6 @@
             await loadProcedures();
             updateApiButton();
             renderEmptyState("Oczekiwanie na rozkaz");
-
-            const recognitionSupported = Boolean(getRecognitionCtor());
-            if (!recognitionSupported) {
-                log("Brak SpeechRecognition. Rozkaz przelaczy Cie do pola tekstowego.", true);
-            }
-
             setMicEnabled(true);
             log("Gotowosc bojowa.");
 
@@ -1035,6 +1032,7 @@
             toggle(true);
             resetListeningUi();
             setMicEnabled(true);
+            manualQuery.value = "";
             manualQuery.focus();
         });
 
