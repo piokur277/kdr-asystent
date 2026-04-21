@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KDR AI | Core V18 Ironclad</title>
+    <title>KDR AI | Core V19 Live Transcribe</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -30,10 +30,10 @@
     <header class="flex-none border-b border-slate-800 pb-1 mb-2">
         <div class="flex justify-between items-baseline">
             <h1 class="text-lg font-black text-red-600 uppercase italic tracking-tighter">KDR AI SYSTEM</h1>
-            <span class="text-[8px] text-slate-500 uppercase">v18.0 IRONCLAD</span>
+            <span class="text-[8px] text-slate-500 uppercase">v19.0 LIVE IOS</span>
         </div>
         <div id="debug-console" class="mt-1 p-1 font-mono text-yellow-600">
-            > System V18. Weryfikacja protokołów...
+            > System V19. Transkrypcja na żywo...
         </div>
     </header>
 
@@ -79,7 +79,7 @@
                 const mic = document.getElementById('mic-btn');
                 mic.disabled = false;
                 mic.classList.replace('text-slate-400', 'text-white');
-                log("System w pełni operacyjny.");
+                log("System operacyjny.");
             }
         }
 
@@ -97,7 +97,7 @@
         }
 
         async function handleCommand(query) {
-            log("Przetwarzanie danych...");
+            log("Analiza...");
             let found = null;
 
             if (API_KEY) {
@@ -159,7 +159,7 @@
             window.speechSynthesis.speak(u);
         }
 
-        // --- V18: DYNAMICZNA INICJALIZACJA MIKROFONU (Tarcza na iOS) ---
+        // --- V19: LIVE TRANSCRIBE DLA iOS ---
         let currentRec = null;
 
         window.addEventListener('load', () => {
@@ -167,9 +167,8 @@
             
             document.getElementById('mic-btn').onclick = () => { 
                 const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!Speech) return log("Twoje urządzenie nie wspiera Web Speech API.", true);
+                if (!Speech) return log("Brak obsługi mowy.", true);
                 
-                // Zawsze czyścimy starą instancję, zanim stworzymy nową
                 if (currentRec) {
                     try { currentRec.abort(); } catch(e) {}
                 }
@@ -177,20 +176,24 @@
                 try {
                     currentRec = new Speech();
                     currentRec.lang = 'pl-PL';
-                    currentRec.interimResults = false;
+                    currentRec.continuous = false;
+                    
+                    // KLUCZOWE DLA iOS: Wymuszamy podawanie słów w locie
+                    currentRec.interimResults = true; 
                     currentRec.maxAlternatives = 1;
+
+                    currentRec.onsoundstart = () => log("Słyszę dźwięk...");
+                    currentRec.onspeechstart = () => log("Wykryto mowę...");
 
                     currentRec.onstart = () => {
                         document.getElementById('mic-btn').classList.add('listening');
-                        log("Nasłuchuję...");
+                        document.getElementById('user-input-display').innerText = "Słucham...";
+                        log("Mikrofon włączony.");
                     };
 
                     currentRec.onerror = (e) => {
                         document.getElementById('mic-btn').classList.remove('listening');
-                        // Tłumaczenie błędów iOS na język strażacki
-                        if(e.error === 'not-allowed') log("BŁĄD: Zezwól na mikrofon w Ustawieniach iOS!", true);
-                        else if(e.error === 'aborted') log("BŁĄD: iOS ubił proces. Kliknij jeszcze raz.", true);
-                        else log(`BŁĄD MIC: ${e.error}`, true);
+                        log(`BŁĄD: ${e.error}`, true);
                     };
 
                     currentRec.onend = () => {
@@ -198,15 +201,35 @@
                     };
 
                     currentRec.onresult = (e) => {
-                        const t = e.results[0][0].transcript.toLowerCase();
-                        document.getElementById('user-input-display').innerText = t;
-                        handleCommand(t);
+                        let finalTranscript = '';
+                        let interimTranscript = '';
+
+                        // Rozbijamy wyniki na gotowe słowa i te jeszcze "zgadywane"
+                        for (let i = e.resultIndex; i < e.results.length; ++i) {
+                            if (e.results[i].isFinal) {
+                                finalTranscript += e.results[i][0].transcript;
+                            } else {
+                                interimTranscript += e.results[i][0].transcript;
+                            }
+                        }
+
+                        // Wyświetlamy tekst w locie (żebyś widział, że działa)
+                        if (interimTranscript) {
+                            document.getElementById('user-input-display').innerText = interimTranscript.toLowerCase() + "...";
+                        }
+                        
+                        // Kiedy iOS uzna, że zdanie jest skończone, odpalamy procedurę
+                        if (finalTranscript) {
+                            const finalLower = finalTranscript.toLowerCase().trim();
+                            document.getElementById('user-input-display').innerText = finalLower;
+                            currentRec.stop(); // Ręcznie ucinamy, żeby przyspieszyć iOS
+                            handleCommand(finalLower);
+                        }
                     };
 
-                    // Uruchomienie musi nastąpić w tej samej funkcji co kliknięcie!
                     currentRec.start(); 
                 } catch (err) {
-                    log(`Krytyczny błąd mikrofonu: ${err.message}`, true);
+                    log(`Błąd startu: ${err.message}`, true);
                 }
             };
 
