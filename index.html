@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KDR AI | Core V14 Perfect Scroll</title>
+    <title>KDR AI | Core V15 iOS Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -21,18 +21,19 @@
             border-left: 2px solid #ef4444;
         }
 
-        /* Ulepszony obszar przewijania ukrywający pasek dla estetyki */
         #procedure-scroll-area::-webkit-scrollbar { width: 4px; }
         #procedure-scroll-area::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     </style>
 </head>
-<body class="flex flex-col p-3 h-screen"> <header class="flex-none border-b border-slate-800 pb-1 mb-2">
+<body class="flex flex-col p-3 h-screen">
+
+    <header class="flex-none border-b border-slate-800 pb-1 mb-2">
         <div class="flex justify-between items-baseline">
             <h1 class="text-lg font-black text-red-600 uppercase italic tracking-tighter">KDR AI SYSTEM</h1>
-            <span class="text-[8px] text-slate-500 uppercase">v14.0 UI Fix</span>
+            <span class="text-[8px] text-slate-500 uppercase">v15.0 iOS FIX</span>
         </div>
         <div id="debug-console" class="mt-1 p-1 font-mono text-yellow-600">
-            > System V14 zoptymalizowany.
+            > System V15 (Zgodność Apple) gotowy.
         </div>
     </header>
 
@@ -79,7 +80,7 @@
                 const mic = document.getElementById('mic-btn');
                 mic.disabled = false;
                 mic.classList.replace('text-slate-400', 'text-white');
-                log("System gotowy.");
+                log("Gotowość bojowa.");
             }
         }
 
@@ -144,7 +145,6 @@
             `;
             speak(`${doc.prefix}. ${doc.content}`);
             toggle(false);
-            // Powrót na górę przy każdej nowej komendzie
             document.getElementById('procedure-scroll-area').scrollTop = 0;
         }
 
@@ -160,20 +160,50 @@
             window.speechSynthesis.speak(u);
         }
 
+        // ZMIANA POD iOS: Inicjalizacja mikrofonu na kliknięcie
         window.addEventListener('load', () => {
             init();
-            const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if(!Recognition) return log("Brak obsługi mowy");
-            const rec = new Recognition();
-            rec.lang = 'pl-PL';
-            rec.onstart = () => document.getElementById('mic-btn').classList.add('listening');
-            rec.onend = () => document.getElementById('mic-btn').classList.remove('listening');
-            rec.onresult = (e) => {
-                const t = e.results[0][0].transcript.toLowerCase();
-                document.getElementById('user-input-display').innerText = t;
-                handleCommand(t);
+            
+            document.getElementById('mic-btn').onclick = () => { 
+                const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if(!Recognition) {
+                    log("Brak API mowy na tym urządzeniu/przeglądarce.", true);
+                    return;
+                }
+                
+                try {
+                    const rec = new Recognition();
+                    rec.lang = 'pl-PL';
+                    rec.interimResults = false; // iOS preferuje false
+                    rec.maxAlternatives = 1;
+
+                    rec.onstart = () => {
+                        document.getElementById('mic-btn').classList.add('listening');
+                        log("Nasłuchuję...");
+                    };
+
+                    rec.onerror = (e) => {
+                        document.getElementById('mic-btn').classList.remove('listening');
+                        log(`BŁĄD MIKROFONU (iOS): ${e.error}`, true);
+                    };
+
+                    rec.onend = () => {
+                        document.getElementById('mic-btn').classList.remove('listening');
+                    };
+
+                    rec.onresult = (e) => {
+                        const t = e.results[0][0].transcript.toLowerCase();
+                        document.getElementById('user-input-display').innerText = t;
+                        handleCommand(t);
+                    };
+
+                    window.speechSynthesis.cancel(); // Przerywamy ewentualne mówienie, by zwolnić kartę audio
+                    rec.start(); 
+                } catch (err) {
+                    log(`Crash mikrofonu: ${err.message}`, true);
+                }
             };
-            document.getElementById('mic-btn').onclick = () => { speak(""); rec.start(); };
+
             document.getElementById('reset-btn').onclick = () => { 
                 window.speechSynthesis.cancel(); 
                 document.getElementById('procedure-output').innerHTML = ''; 
