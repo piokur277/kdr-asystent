@@ -82,7 +82,7 @@
 
         .api-panel {
             display: grid;
-            grid-template-columns: 1fr auto auto;
+            grid-template-columns: 1.4fr 1fr auto auto;
             gap: 8px;
             margin-top: 10px;
         }
@@ -386,6 +386,15 @@
                     spellcheck="false"
                     placeholder="Wklej API Key Gemini"
                 >
+                <input
+                    id="api-model-input"
+                    class="api-input"
+                    type="text"
+                    autocomplete="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    placeholder="Model API, np. gemini-3-flash-preview"
+                >
                 <button id="api-save-btn" class="toolbar-btn api-on" type="button">Zapisz API</button>
                 <button id="api-clear-btn" class="toolbar-btn api-clear" type="button">Usun API</button>
             </div>
@@ -504,12 +513,13 @@
                     "wiele ofiar",
                     "mci"
                 ],
-                content: "1. Ustal dowodzenie, sektory dzialan i kanaly lacznosci juz w pierwszej fazie akcji.\n2. Wykonaj segregacje medyczna i oddziel dzialania ratownicze od rozpoznania technicznego pojazdow.\n3. Kazdy pojazd elektryczny oznacz i przypisz do osobnego rozpoznania zagrozen energetycznych.\n4. Wprowadz strefe dla pojazdow podejrzanych o uszkodzenie baterii trakcyjnej poza glownym obszarem medycznym.\n5. Priorytetem jest zycie poszkodowanych, ale bez wchodzenia ratownikow w strefe niekontrolowanego pozaru lub napiecia.\n6. Zorganizuj osobne miejsce dla dekontaminacji, chlodzenia pojazdow i czasowej izolacji uszkodzonych EV.\n7. Po opanowaniu fazy medycznej przejdz do stabilizacji, dezaktywacji i przygotowania pojazdow do holowania."
+                content: "1. Ustal dowodzenie, sektory dzialan i kanaly lacznosci juz w pierwszej fazie akcji.\n2. Wykonaj segregacje medyczna i oddziel dzialania ratownicze od rozpoznania technicznego pojazdow.\n3. Kazdy pojazd elektryczny oznacz i przypisz do osobnego rozpoznania zagrozen energetycznych.\n4. Wprowadz strefe dla pojazdow podejrzanych o uszkodzenie baterii trakcyjnej poza glownym obszarem medycznym.\n5. Priorytetem jest zycie poszkodowanych, ale bez wchodzenia ratownikow w strefie niekontrolowanego pozaru lub napiecia.\n6. Zorganizuj osobne miejsce dla dekontaminacji, chlodzenia pojazdow i czasowej izolacji uszkodzonych EV.\n7. Po opanowaniu fazy medycznej przejdz do stabilizacji, dezaktywacji i przygotowania pojazdow do holowania."
             }
         ];
 
         const state = {
             apiKey: localStorage.getItem("kdr_ai_api_key") || "",
+            apiModel: localStorage.getItem("kdr_ai_api_model") || "gemini-3-flash-preview",
             procedury: [],
             recognition: null,
             micStream: null,
@@ -529,6 +539,7 @@
         const apiBtn = document.getElementById("api-btn");
         const apiPanel = document.getElementById("api-panel");
         const apiKeyInput = document.getElementById("api-key-input");
+        const apiModelInput = document.getElementById("api-model-input");
         const apiSaveBtn = document.getElementById("api-save-btn");
         const apiClearBtn = document.getElementById("api-clear-btn");
         const voiceHelpBtn = document.getElementById("voice-help-btn");
@@ -564,6 +575,7 @@
             apiBtn.textContent = hasKey ? "API ON" : "Pokaz API";
             apiBtn.classList.toggle("api-on", hasKey);
             apiKeyInput.value = state.apiKey;
+            apiModelInput.value = state.apiModel;
         }
 
         function normalizeText(value) {
@@ -757,7 +769,7 @@
         async function resolveProcedure(query) {
             if (state.apiKey) {
                 try {
-                    const aiId = await callAI(query, "gemini-1.5-flash");
+                    const aiId = await callAI(query, state.apiModel);
                     const aiMatch = state.procedury.find(item => aiId.includes(item.id));
                     if (aiMatch) return { procedure: aiMatch, source: "AI" };
                 } catch (error) {
@@ -778,6 +790,7 @@
             }
 
             userInputDisplay.textContent = query;
+            manualQuery.value = "";
             log(`Analiza: ${query}`);
 
             const { procedure, source } = await resolveProcedure(query);
@@ -929,11 +942,15 @@
 
         function saveApiKey() {
             state.apiKey = apiKeyInput.value.trim();
+            state.apiModel = apiModelInput.value.trim() || "gemini-3-flash-preview";
             if (state.apiKey) {
                 localStorage.setItem("kdr_ai_api_key", state.apiKey);
+                localStorage.setItem("kdr_ai_api_model", state.apiModel);
                 log("Zapisano API Key.");
+                log(`Model API: ${state.apiModel}`);
             } else {
                 localStorage.removeItem("kdr_ai_api_key");
+                localStorage.removeItem("kdr_ai_api_model");
                 log("AI wylaczone. Pozostaje lokalna baza.");
             }
             updateApiButton();
@@ -941,8 +958,11 @@
 
         function clearApiKey() {
             apiKeyInput.value = "";
+            apiModelInput.value = "gemini-3-flash-preview";
             state.apiKey = "";
+            state.apiModel = "gemini-3-flash-preview";
             localStorage.removeItem("kdr_ai_api_key");
+            localStorage.removeItem("kdr_ai_api_model");
             updateApiButton();
             log("Usunieto API Key. Dziala tylko baza lokalna.");
         }
@@ -1022,6 +1042,12 @@
         apiSaveBtn.addEventListener("click", saveApiKey);
         apiClearBtn.addEventListener("click", clearApiKey);
         apiKeyInput.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                saveApiKey();
+            }
+        });
+        apiModelInput.addEventListener("keydown", event => {
             if (event.key === "Enter") {
                 event.preventDefault();
                 saveApiKey();
