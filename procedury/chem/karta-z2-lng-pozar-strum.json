@@ -1,0 +1,10 @@
+{
+  "id": "KARTA-CHEM-Z2-LNG-POZAR-STRUM",
+  "zrodlo": "Zasady postępowania podczas zdarzeń z LNG, KG PSP",
+  "data_aktualizacji": "2025-12",
+  "keywords": [
+    "pożar strumieniowy lng", "jet fire", "wyciek i pożar lng", "pożar zaworu lng", "pali się wyciek lng", "ogień z cysterny lng", "palnik lng"
+  ],
+  "prefix": "Karta Z2 - Pożar strumieniowy z wycieku cysterny LNG (Jet Fire).",
+  "content": "1. UWAGA: Zastosuj pełne ubranie specjalne z kapturem, ODO i rękawice kriogeniczne!\n2. Wyznacz strefę zagrożenia dla ratowników (300 m) i dokonaj rozpoznania zza osłony balistycznej.\n3. Spraw kurtyny i prądy rozproszone do ograniczenia potężnego promieniowania cieplnego (znacznie wyższe niż przy pożarach benzyny).\n4. Prowadź bezobsługowe chłodzenie zbiornika wodą (10 l/min/m2).\n5. NIE UGASZAJ pożaru strumieniowego, jeśli nie masz pewności, że odetniesz wypływ gazu (grozi wybuchem chmury).\n6. NIE PODAWAJ wody na zawory bezpieczeństwa ani do wnętrza rozszczelnienia.\n7. Uważaj, aby prądem wody nie podwyższać temperatury miejsc cysterny, które same się chłodzą przez rozprężający się gaz.\n8. Pozwól na kontrolowane wypalanie się ulatniającego gazu, kontrolując temperaturę reszty płaszcza."
+}
