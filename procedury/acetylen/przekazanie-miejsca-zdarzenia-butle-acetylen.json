@@ -1,0 +1,16 @@
+{
+  "id": "KARTA-ACETYLEN-PRZEKAZANIE",
+  "zrodlo": "Standardowe zasady postepowania podczas zdarzen z udzialem butli z acetylenem, KG PSP",
+  "data_aktualizacji": "2020-03-13",
+  "keywords": [
+    "przekazanie miejsca zdarzenia acetylen",
+    "przekazanie butli acetylenowej",
+    "udt tdt wdt acetylen",
+    "zakonczenie dzialan acetylen",
+    "przekazanie po chlodzeniu butli",
+    "protokol przekazania acetylen",
+    "po akcji butla acetylenowa"
+  ],
+  "prefix": "Przekazanie miejsca zdarzenia po dzialaniach z udzialem butli z acetylenem.",
+  "content": "1. Dla karty Z1 po zakonczeniu 24-godzinnego procesu chlodzenia przekaz miejsce zdarzenia wlascicielowi lub uzytkownikowi, sporzadzajac dokument przekazania. Powiadom miejscowy UDT, TDT lub WDT i wpisz do dokumentu czas rozpoczecia oraz zakonczenia chlodzenia, informacje o powiadomieniu oraz zakazie uzytkowania butli do czasu dopuszczenia do eksploatacji.\n2. Dla karty Z1 przed ukonczeniem 24 godzin, gdy po dzialaniach butla zostala zanurzona w zbiorniku z woda, przekaz miejsce zdarzenia z wpisaniem czasu rozpoczecia chlodzenia oraz wymaganego czasu jego kontynuacji. Pozostale informacje przekaz jak w pkt 1.\n3. Dla karty Z2 przekaz miejsce zdarzenia po zatrzymaniu wycieku przez zakrecenie zaworu i potwierdzeniu, ze butla jest zimna.\n4. Dla karty Z2 przekaz miejsce zdarzenia po oproznieniu butli. W dokumencie podaj informacje o oproznieniu butli, szczegolnie gdy nie pozostalo wymagane cisnienie resztkowe.\n5. Dla karty Z3 przekaz miejsce zdarzenia po zatrzymaniu wycieku przez zakrecenie zaworu.\n6. Dla karty Z3 przekaz miejsce zdarzenia po oproznieniu butli. W dokumencie podaj informacje o oproznieniu butli, szczegolnie gdy nie pozostalo wymagane cisnienie resztkowe.\n7. Dla karty Z4 przekaz miejsce zdarzenia, gdy butle znajduja sie w miejscu bezpiecznym."
+}
