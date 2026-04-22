@@ -1,0 +1,19 @@
+{
+  "id": "KARTA-ORG-DETEKTOR-MSA-ALTAIR-4X",
+  "zrodlo": "Dane przekazane przez uzytkownika",
+  "data_aktualizacji": "",
+  "keywords": [
+    "detektor msa",
+    "altair 4x",
+    "detektor wielogazowy",
+    "alarm niski dgw",
+    "alarm wysoki dgw",
+    "19,5 o2",
+    "25 ppm co",
+    "10 ppm h2s",
+    "100 ppm co",
+    "15 ppm h2s"
+  ],
+  "prefix": "Detektor wielogazowy MSA Altair 4X - progi alarmowe i sygnalizacja.",
+  "content": "1. Detektor wielogazowy: Altair 4X.\n2. Alarm niski: 10% DGW; 19,5% O2; 25 ppm CO; 10 ppm H2S.\n3. Alarm niski: sygnal dzwiekowy pulsacyjny ok. 95 dB.\n4. Alarm wysoki: 20% DGW; 18% O2; 100 ppm CO; 15 ppm H2S."
+}
