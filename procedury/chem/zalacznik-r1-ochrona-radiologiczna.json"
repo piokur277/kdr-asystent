@@ -1,0 +1,18 @@
+{
+  "id": "KARTA-CHEM-R1-OCHRONA-RADIOLOGICZNA",
+  "zrodlo": "Zalacznik nr R.1. Ochrona radiologiczna oraz dzialania podczas zdarzen radiacyjnych - podstawowe informacje",
+  "data_aktualizacji": "",
+  "keywords": [
+    "ochrona radiologiczna",
+    "zdarzenie radiacyjne",
+    "strefa goraca promieniowanie",
+    "promieniowanie alfa beta gamma neutronowe",
+    "transport materialow promieniotworczych",
+    "wskaznik transportowy ti",
+    "wzorcowanie dozymetrow",
+    "skazenie promieniotworcze",
+    "moc dawki"
+  ],
+  "prefix": "Zalacznik R1 - Ochrona radiologiczna oraz podstawowe informacje o dzialaniach podczas zdarzen radiacyjnych.",
+  "content": "1. Zdarzenie radiacyjne to nietypowa sytuacja zwiazana ze zrodlem promieniowania jonizujacego, wymagajaca pilnych dzialan interwencyjnych w celu ograniczenia skutkow dla ludzi, mienia lub srodowiska.\n2. Strefa I (goraca) obejmuje teren, na ktorym moze wystepowac skazenie promieniotworcze i/lub moc dawki przekracza 100 uSv/h. Przy skazeniu 1000 Bq/cm2 dla izotopow gamma i beta, 100 Bq/cm2 dla izotopow alfa lub mocy dawki powyzej 100 uSv/h nalezy niezwlocznie usunac osoby poszkodowane i postronne.\n3. Promieniowanie alfa jest slabo przenikliwe i stanowi glownie zagrozenie wewnetrzne; beta jest zagrozeniem zewnetrznym i wewnetrznym; gamma jest bardzo przenikliwe i stanowi zagrozenie zewnetrzne i wewnetrzne; neutronowe jest bardzo przenikliwe i stanowi zagrozenie zewnetrzne.\n4. Podstawowe zasady zmniejszenia narazenia to: skrocic czas przebywania w poblizu zrodla, zwiekszyc odleglosc oraz stosowac odpowiednie oslony dostosowane do rodzaju promieniowania.\n5. Przy promieniowaniu alfa, beta i gamma nalezy bezwzglednie stosowac filtrujacy sprzet ochrony ukladu oddechowego oraz minimum ubranie specjalne spelniajace wymagania PN-EN 469; przy promieniowaniu neutronowym wymagane jest minimum ubranie specjalne spelniajace PN-EN 469.\n6. Dawka pochlonieta przez funkcjonariusza podczas dzialan ratowniczych nie moze przekroczyc 1 mSv rocznie; dopuszcza sie przekroczenie do 5 mSv pod warunkiem zachowania sredniej 1 mSv/rok w kolejnych 5 latach.\n7. W transporcie materialow promieniotworczych pojazd oznakowuje sie tablicami barwy pomaranczowej oraz nalepkami ostrzegawczymi klasy 7D, a parametry przewozu ocenia sie m.in. przez moc dawki i skazenia powierzchni.\n8. Sztuki przesylki klasyfikuje sie do kategorii I-BIALA, II-ZOLTA lub III-ZOLTA w zaleznosci od mocy dawki na powierzchni i wskaznika transportowego.\n9. Wskaznik transportowy TI to najwyzszy poziom promieniowania zmierzony w odleglosci 1 metra od zewnetrznych powierzchni sztuki przesylki, przeliczony zgodnie z zasadami podanymi w dokumencie.\n10. Sprzet dozymetryczny musi byc wzorcowany przez akredytowane laboratorium: bez kontrolnego zrodla promieniotworczego nie rzadziej niz raz na 12 miesiecy, a z kontrolnym zrodlem nie rzadziej niz raz na 24 miesiace."
+}
