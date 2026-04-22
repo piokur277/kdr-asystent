@@ -1,0 +1,14 @@
+{
+  "id": "KARTA-ACETYLEN-ROZPOZNANIE",
+  "zrodlo": "Standardowe zasady postepowania podczas zdarzen z udzialem butli z acetylenem, KG PSP",
+  "data_aktualizacji": "2020-03-13",
+  "keywords": [
+    "rozpoznanie butli acetylen",
+    "jak rozpoznac butle z acetylenem",
+    "czy butla acetylen jest szczelna",
+    "ocena butli acetylen",
+    "podejrzenie rozkladu acetylenu"
+  ],
+  "prefix": "Rozpoznanie - butle z acetylenem.",
+  "content": "1. Pozyskaj od personelu, uczestnikow i swiadkow jak najwiecej informacji o okolicznosciach zdarzenia.\n2. Nie zblizaj sie do butli i jej nie przemieszczaj.\n3. Ocen stan butli po oznakach zewnetrznych i otoczeniu; oznaki ogrzania, uszkodzen, plomienia, odglosu wyplywu gazu lub kopcacego plomienia wskazuja na zagrozenie i potrzebe rozpoczecia chlodzenia.\n4. Gdy nie jestes pewien stanu butli, podaj jak najszybciej rozproszony prad wody na cala powierzchnie i obserwuj parowanie; jesli wystepuje para nad plaszczem, kontynuuj chlodzenie.\n5. Ocen, czy butla jest szczelna.\n6. Przy braku pewnej informacji o stanie butli przyjmij najbardziej niebezpieczny przypadek i prowadzenie dzialan jak dla karty Z1.\n7. Dobierz karte: butle poddane dzialaniu ognia/ciepla lub wielokrotnym uderzeniom -> Z1; butle niepoddane, nieszczelne wewnatrz obiektu -> Z2; butle niepoddane, nieszczelne na zewnatrz obiektu -> Z3; butle niepoddane, szczelne -> Z4."
+}
