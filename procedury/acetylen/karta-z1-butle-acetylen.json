@@ -1,0 +1,14 @@
+{
+  "id": "KARTA-ACETYLEN-Z1",
+  "zrodlo": "Standardowe zasady postepowania podczas zdarzen z udzialem butli z acetylenem, KG PSP",
+  "data_aktualizacji": "2020-03-13",
+  "keywords": [
+    "butla acetylen po pozarze",
+    "butla acetylen podgrzana",
+    "butla acetylen po uderzeniu",
+    "chlodzenie butli acetylen 24h",
+    "test zwilzania acetylen"
+  ],
+  "prefix": "Karta Z1 - Butle poddane dzialaniu ognia/ciepla lub poddane wielokrotnym uderzeniom, szczelne lub nieszczelne.",
+  "content": "1. Wyznacz strefe zagrozenia o minimalnym zalecanym promieniu 200 m, ostrzez ratownikow, ewakuuj osoby i nie zblizaj sie do butli ani jej nie przemieszczaj.\n2. Ogranicz liczbe ratownikow w strefie do niezbednego minimum; w promieniu 30 m stosuj ochrone drog oddechowych i oczu.\n3. Realizuj chlodzenie butli rozproszonymi pradami wody, najlepiej ze stanowisk bezobslugowych, wykorzystujac dostepne oslony; prowadz chlodzenie co najmniej 1 godzine, a przy utrudnionym dostepie do okolo 50% powierzchni co najmniej 3 godziny.\n4. Gdy butla jest nieszczelna i uwalniany acetylen sie spala, prowadz chlodzenie do momentu jej oproznienia, nie gas plomienia palacego sie gazu i monitoruj stezenie gazu w powietrzu oraz zagrozenie wybuchem, eliminujac zrodla zaplonu.\n5. Jezeli nie wystepuje zagrozenie zycia ludzkiego, a sytuacja uniemozliwia bezpieczne zastosowanie stanowisk bezobslugowych lub oslon, rozwaz pozostawienie butli w miejscu zdarzenia bez podejmowania dzialan chlodzacych.\n6. Przeprowadz test zwilzania: po przerwaniu chlodzenia obserwuj, czy nad butla unosi sie para wodna albo czy powierzchnia szybko wysycha; jesli tak, kontynuuj chlodzenie przez kolejna godzine i powtorz test.\n7. Gdy powierzchnia pozostaje zimna, sprawdz szczelnosc; butle zimna i szczelna mozna przeniesc do zbiornika z woda dla kontynuacji 24-godzinnego procesu chlodzenia, a butle nieszczelna zaleca sie dalej chlodzic pradami wody lub przeniesc do zbiornika z woda, gdy ryzyko pozarowo-wybuchowe zwiazane z uwalnianiem gazu jest nieznaczne."
+}
