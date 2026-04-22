@@ -1,0 +1,13 @@
+{
+  "id": "KARTA-ACETYLEN-Z3",
+  "zrodlo": "Standardowe zasady postepowania podczas zdarzen z udzialem butli z acetylenem, KG PSP",
+  "data_aktualizacji": "2020-03-13",
+  "keywords": [
+    "nieszczelna butla acetylen na zewnatrz",
+    "wyciek acetylenu na zewnatrz",
+    "acetylen poza budynkiem",
+    "karta z3 acetylen"
+  ],
+  "prefix": "Karta Z3 - Butle niepoddane dzialaniu ognia/ciepla lub wielokrotnym uderzeniom - nieszczelne, znajdujace sie na zewnatrz obiektu.",
+  "content": "1. Wyznacz promien strefy zagrozenia na podstawie wskazan urzadzen pomiarowych, lecz nie mniejszy niz 30 m, i przeprowadz ewakuacje osob ze strefy.\n2. Monitoruj obszar wystepowania mieszaniny wybuchowej, ogranicz liczbe ratownikow w strefie do minimum i stosuj ochrone drog oddechowych oraz oczu.\n3. Wyeliminuj potencjalne zrodla zaplonu; ratownikow przebywajacych w strefie zabezpiecz rozproszonym pradem wody, korzystaj z narzedzi nieiskrzacych i urzadzen w wykonaniu przeciwwybuchowym.\n4. Gdy nie wystepuje zagrozenie wybuchem, podejmij probe zakrecenia zaworu na butli w celu zatrzymania wycieku gazu.\n5. Po zakreceniu zaworu sprawdz, czy cala powierzchnia butli pozostaje zimna; jesli nie, przejdz do dzialan z karty Z1, a jesli pozostaje zimna, dopuszcza sie jej przeniesienie w inne bezpieczniejsze miejsce."
+}
