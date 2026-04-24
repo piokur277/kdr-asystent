@@ -1,10 +1,20 @@
 {
   "id": "KARTA-CHEM-Z1-LNG-POZAR-ZEW",
-  "zrodlo": "Zasady postępowania podczas zdarzeń z LNG, KG PSP",
+  "kategoria": "dzialania",
+  "zrodlo": "Zasady postepowania podczas zdarzen z LNG, KG PSP",
   "data_aktualizacji": "2025-12",
+  "slowo_kluczowe": "bleve",
   "keywords": [
-    "pożar cysterny lng", "pożar zewnętrzny lng", "ogrzewanie cysterny", "pali się obok cysterny", "pożar gazu", "cysterna z gazem", "bleve lng", "chłodzenie cysterny lng", "skroplony gaz ziemny"
+    "pozar cysterny lng",
+    "pozar zewnetrzny lng",
+    "ogrzewanie cysterny",
+    "pali sie obok cysterny",
+    "pozar gazu",
+    "cysterna z gazem",
+    "bleve lng",
+    "chlodzenie cysterny lng",
+    "skroplony gaz ziemny"
   ],
-  "prefix": "Karta Z1 - Pożar zewnętrzny podgrzewający cysternę LNG bez wycieku gazu.",
-  "content": "1. Wyznacz strefę ewakuacji dla osób postronnych (1,5 km) oraz strefę zagrożenia dla ratowników (300 m).\n2. Dokonaj rozpoznania zza tarczy balistycznej (odczyt aparatury, widoczne uszkodzenia).\n3. Podawaj bezobsługowe prądy wody w celu intensywnego chłodzenia (wydajność min. 10 l/min/m2). Schładzanie ma sens tylko przy nienaruszonej powłoce cysterny.\n4. Chłodzenie jest skuteczne, gdy podawana woda nie odparowuje z powierzchni.\n5. Kontroluj temperaturę płaszcza (pirometr, termowizja).\n6. Jeśli woda odparowuje, widać odkształcenia, słychać dudnienie/syczenie lub zadziałał zawór bezpieczeństwa - natychmiast wycofaj ratowników na bezpieczną odległość, zostawiając działka bezobsługowe.\n7. Przystąp do gaszenia pożaru zewnętrznego.\n8. Po zgaśnięciu płomienia chłódź cysternę jeszcze przez 10-15 minut.\n9. W razie stwierdzenia uszkodzeń armatury, uszczelnij wyciek (kliny, włóknina) i wezwij SPOT do przepompowania LNG."
+  "prefix": "Karta Z1 - Pozar zewnetrzny podgrzewajacy cysterne LNG bez wycieku gazu.",
+  "content": "1. KOD / NAZWA: LNG Z1 - pozar zewnetrzny podgrzewajacy cysterne LNG bez wycieku gazu.\n2. ROZPOZNANIE: dokonaj rozpoznania zza tarczy balistycznej, oceniajac wskazania aparatury oraz widoczne uszkodzenia cysterny.\n3. STREFA: wyznacz strefe ewakuacji dla osob postronnych 1,5 km oraz strefe zagrozenia dla ratownikow 300 m.\n4. SOI: w przekazanej procedurze nie wskazano osobnego zestawu SOI; kluczowe jest prowadzenie rozpoznania zza oslony i utrzymywanie bezpiecznego dystansu.\n5. DZIALANIA KRYTYCZNE: natychmiast rozpocznij intensywne chlodzenie bezobslugowymi pradami wody o wydajnosci co najmniej 10 l/min/m2, ale tylko wtedy, gdy powloka cysterny jest nienaruszona.\n6. PROCEDURA SZCZEGOLOWA: chlodzenie uznaje sie za skuteczne, gdy podawana woda nie odparowuje z powierzchni. Kontroluj temperature plaszcza pirometrem lub kamera termowizyjna. Jezeli widoczne sa uszkodzenia armatury, uszczelnij wyciek przy uzyciu klinow lub wlokniny i wezwij SPOT do przepompowania LNG. Pozar zewnetrzny gas po ustabilizowaniu sytuacji, a po zgasnieciu plomienia kontynuuj chlodzenie cysterny jeszcze przez 10-15 minut.\n7. CO MOZE POJSC NIE TAK: jesli woda odparowuje z powierzchni, widoczne sa odksztalcenia, slychac dudnienie lub syczenie albo zadzialal zawor bezpieczenstwa, oznacza to krytyczny wzrost zagrozenia.\n8. UWAGI OPERACYJNE: w sytuacji krytycznej natychmiast wycofaj ratownikow na bezpieczna odleglosc, pozostawiajac dzialka bezobslugowe."
 }
