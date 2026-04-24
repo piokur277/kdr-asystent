@@ -1,7 +1,9 @@
 {
   "id": "KARTA-ORG-CO-WARTOSCI-GRANICZNE",
-  "zrodlo": "Dane przekazane przez uzytkownika",
+  "kategoria": "substancja",
+  "zrodlo": "CIOP-PIB, Baza niebezpiecznych substancji chemicznych, Tlenek wegla",
   "data_aktualizacji": "",
+  "slowo_kluczowe": "czad",
   "keywords": [
     "co",
     "czad",
@@ -12,8 +14,11 @@
     "karboksyhemoglobina",
     "alarm czadu",
     "objawy zatrucia co",
-    "czujnik czadu"
+    "czujnik czadu",
+    "cas 630-08-0",
+    "h220",
+    "h331",
+    "h372"
   ],
-  "prefix": "CO - wartosci graniczne stezenia i wplyw na zdrowie.",
-  "content": "1. Tlenek wegla (CO), potocznie zwany czadem, jest gazem bezwonnym, bezbarwnym i pozbawionym smaku, a zagrozenie zalezy od stezenia i czasu ekspozycji.\n2. 0.1-5 ppm: normalny, bezpieczny poziom w powietrzu.\n3. 9 ppm: maksymalne dopuszczalne stezenie w pomieszczeniach w ciagu 8 godzin.\n4. 35 ppm: maksymalne dopuszczalne stezenie srednie w ciagu 8 godzin pracy.\n5. 50 ppm: maksymalne stezenie, na ktore mozna byc narazonym przez 8 godzin; czujniki czadu zazwyczaj zaczynaja alarmowac w tym przedziale.\n6. 100-200 ppm: po 1-2 godzinach pojawiaja sie lekkie bole glowy, nudnosci, zawroty glowy i zmeczenie.\n7. 400 ppm: silny bol glowy, wymioty, oslabienie miesni po 1-2 godzinach; zagrozenie zycia po 3 godzinach.\n8. 800 ppm: zawroty glowy, nudnosci, konwulsje w ciagu 45 minut; utrata przytomnosci w ciagu 2 godzin, ryzyko smierci w ciagu 2-3 godzin.\n9. 1600 ppm: bole glowy, zapasc w ciagu 20 minut, smierc po ok. 1 godzinie.\n10. 3200 ppm: intensywny bol glowy, wymioty po 5-10 minutach, zgon po 30 minutach.\n11. 6400 ppm: zapasc po 1-2 minutach, zgon w ciagu 10-15 minut.\n12. 12800 ppm: utrata przytomnosci po 2-3 wdechach, smierc w ciagu 1-3 minut.\n13. CO wiaze sie z hemoglobina ok. 200-300 razy silniej niz tlen, tworzac karboksyhemoglobine i prowadzac do ostrego niedotlenienia mozgu i serca.\n14. Przy wysokich stezeniach zgon moze nastapic bardzo szybko, czesto podczas snu.\n15. Nawet mniejsze stezenia przy przewleklej ekspozycji moga uszkadzac mozg plodu, a wyzsze powodowac trwale uszkodzenia neurologiczne i kardiologiczne."
-}
+  "prefix": "CO / Tlenek wegla - karta zagrozenia operacyjnego.",
+  "content": "1. KOD / NAZWA: CO - tlenek wegla, czad; CAS 630-08-0; synonim monotlenek wegla.\n2. ROZPOZNANIE: gaz bezbarwny i bezwonny, lzejszy lub zblizony gestoscia do powietrza (gestosc wzgledna 0,9678). Dziala toksycznie po wdychaniu i hamuje oddychanie tkankowe przez wiazanie z hemoglobina.\n3. STREFA: brak jednej liczbowej strefy w materiale CIOP; przy podejrzeniu obecnosci przyjac brak bezpiecznego progu zapachowego i koniecznosc szybkiego usuniecia osob z narazenia oraz wentylacji.\n4. SOI: brak szczegolowego doboru SOI w materiale CIOP; przy ratowaniu kluczowe jest unikanie narazenia inhalacyjnego i szybkie podawanie tlenu poszkodowanemu.\n5. DZIALANIA KRYTYCZNE: wyniesc lub wyprowadzic poszkodowanego z miejsca narazenia, zapewnic spokoj i ochrone przed utrata ciepla, jak najszybciej podac tlen i wezwac lekarza. W przypadku utraty przytomnosci ulozyc w pozycji bocznej ustalonej, udroznic drogi oddechowe, a jesli nie oddycha - prowadzic sztuczne oddychanie z jednoczesnym podawaniem tlenu.\n6. PROCEDURA SZCZEGOLOWA: klasyfikacja CLP obejmuje H220, H331 i H372 oraz informacje o skrajnej latwopalnosci, toksycznosci inhalacyjnej i uszkodzeniu narzadow przy narazeniu powtarzanym. W pierwszej pomocy CIOP zaleca kontynuacje podawania tlenu, transport do szpitala bez przerywania tlenoterapii oraz obserwacje szpitalna z kontrola EKG. Dla osoby nieprzytomnej wskazano mozliwosc intubacji i wentylacji workiem AMBU przez personel medyczny.\n7. WARTOSCI GRANICZNE I PARAMETRY: NDS 23 mg/m3, czyli 20 ppm; NDSCh 117 mg/m3, czyli 100 ppm; NDSP nie ustalono. Temperatura samozaplonu 605 C. Granice wybuchowosci w powietrzu: 12,5-75% obj. Masa czasteczkowa 28,01.\n8. GLOWNE ZAGROZENIA: gaz toksyczny i duszacy, dziala przez drogi oddechowe, moze powodowac nieodwracalne uszkodzenie osrodkowego ukladu nerwowego, niewydolnosc wiencowa i zawal u osob ze zmianami w sercu. Przy narazeniu przewleklym moze powodowac zaburzenia krazenia wiencowego, zmiany w EKG, bole i zawroty glowy, zaburzenia pamieci, zmiany osobowosci i neurologiczne.\n9. CO MOZE POJSC NIE TAK: przeoczenie zagrozenia z powodu braku zapachu, opoznienie tlenoterapii, przerwanie podawania tlenu podczas transportu oraz niedoszacowanie ryzyka pozarowo-wybuchowego.\n10. UWAGI OPERACYJNE: z materialu CIOP wynika, ze prog wy
