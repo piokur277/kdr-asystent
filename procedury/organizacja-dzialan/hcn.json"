@@ -1,7 +1,9 @@
 {
   "id": "KARTA-ORG-HCN-WARTOSCI-GRANICZNE",
-  "zrodlo": "Dane przekazane przez uzytkownika",
+  "kategoria": "substancja",
+  "zrodlo": "CIOP-PIB, Baza niebezpiecznych substancji chemicznych, Cyjanowodor",
   "data_aktualizacji": "",
+  "slowo_kluczowe": "cyjanowodor",
   "keywords": [
     "hcn",
     "cyjanowodor",
@@ -12,8 +14,12 @@
     "cyjanowodor pozar",
     "oksydaza cytochromowa",
     "idlh hcn",
-    "toksycznosc hcn"
+    "toksycznosc hcn",
+    "cas 74-90-8",
+    "h224",
+    "h330",
+    "h410",
+    "ndsp hcn"
   ],
-  "prefix": "HCN - wartosci graniczne stezenia, zagrozenia i postepowanie ratunkowe.",
-  "content": "1. Cyjanowodor (HCN), znany rowniez jako kwas pruski, to skrajnie toksyczny gaz. Jest ok. 35 razy bardziej toksyczny niz tlenek wegla i prowadzi do szybkiego niedotlenienia przez blokowanie komorkowego wykorzystania tlenu.\n2. NDS dla HCN wynosi 20 ppm jako wartosc srednia wazona dla 8-godzinnego dnia pracy.\n3. NDSCh dla HCN wynosi 40 ppm.\n4. IDLH dla HCN oznacza stezenie stanowiace bezposrednie zagrozenie dla zycia i zdrowia.\n5. 2-10 ppm: mozliwe pierwsze objawy przy dluzszym kontakcie, takie jak lekkie bole glowy lub podraznienie blon sluzowych; zapach gorzkich migdalow moze byc wyczuwalny, ale nie jest wiarygodnym wskaznikiem bezpieczenstwa.\n6. 20-50 ppm: poziom niebezpieczny; moga wystapic wyrazne objawy zatrucia, w tym zawroty glowy, nudnosci, przyspieszony oddech i kolatanie serca.\n7. Powyzej 50 ppm: stezenie stanowi bezposrednie zagrozenie dla zycia, wymaga natychmiastowego opuszczenia strefy skazenia i uzycia specjalistycznego sprzetu ochrony drog oddechowych.\n8. Mechanizm toksycznosci polega na blokowaniu enzymow odpowiedzialnych za transport tlenu do komorek, w tym oksydazy cytochromowej. Organizm traci zdolnosc do oddychania komorkowego mimo obecnosci tlenu we krwi.\n9. HCN wydziela sie podczas spalania tworzyw sztucznych, m.in. poliuretanu, a takze welny i jedwabiu. Jest jednym z najniebezpieczniejszych skladnikow dymu pozarowego.\n10. Poza toksycznoscia HCN jest skrajnie latwopalny i w odpowiednich stezeniach tworzy z powietrzem mieszaniny wybuchowe.\n11. W przypadku podejrzenia obecnosci HCN konieczna jest natychmiastowa ewakuacja pod wiatr od zrodla wycieku oraz wezwanie sluzb ratunkowych.\n12. Pomoc medyczna musi byc udzielona niezwlocznie, poniewaz zatrucie HCN postepuje bardzo szybko."
-}
+  "prefix": "HCN / Cyjanowodor - karta zagrozenia operacyjnego.",
+  "content": "1. KOD / NAZWA: HCN - cyjanowodor, kwas pruski; CAS 74-90-8.\n2. ROZPOZNANIE: bezbarwna, skrajnie latwopalna ciecz i pary o zapachu gorzkich migdalow. Prog wyczuwalnosci zapachu wynosi 0,22-5,6 mg/m3, ale dotyczy tylko osob wrazliwych i nie moze byc jedynym kryterium bezpieczenstwa. Gestosc par wzgledem powietrza wynosi 0,974.\n3. STREFA: brak jednej liczbowej strefy w materiale CIOP; przyjmij natychmiastowe usuniecie osob z narazenia i calkowite ograniczenie ekspozycji inhalacyjnej oraz skornego kontaktu z substancja.\n4. SOI: w materiale CIOP nie podano jednego zestawu SOI dla ratownikow, ale przy skazeniu skory wskazano koniecznosc odpowiedniej odziezy ochronnej, w tym rekawic. Ze wzgledu na bardzo wysoka toksycznosc i szybkie wchlanianie nalezy traktowac ekspozycje jako skrajnie niebezpieczna.\n5. DZIALANIA KRYTYCZNE: natychmiast wyniesc zatrutego z miejsca narazenia, zapewnic spokoj, bezruch i ochrone przed utrata ciepla, natychmiast podawac tlen i wezwac lekarza. Przy zatruciu inhalacyjnym mozna rozwazyc azotyn amylu tylko wtedy, gdy jest pewnosc, ze przyczyna jest HCN lub cyjanki.\n6. PROCEDURA SZCZEGOLOWA: klasyfikacja CLP obejmuje H224, H330 i H410. Wartosc NDS wynosi 1 mg/m3, czyli 0,9 ppm; NDSCh nie ustalono; NDSP wynosi 5 mg/m3, czyli 4,5 ppm. Wlasciwosci fizykochemiczne: temperatura wrzenia 26 C, zaplonu -17,8 C, samozaplonu 538 C, granice wybuchowosci 5,6-41% obj. W razie zatrucia przytomnego podawac tlen i zorganizowac transport do szpitala bez przerywania leczenia; w razie zaburzen oddechowych kontynuowac wentylacje i tlenoterapie. W pomocy lekarskiej wskazano tiosiarczan sodu, a w materiale rowniez tlen, azotyn amylu i azotyn sodu jako odtrutki lub leki stosowane w leczeniu.\n7. WARTOSCI GRANICZNE I PARAMETRY: NDS 1 mg/m3 (0,9 ppm); NDSCh nie ustalono; NDSP 5 mg/m3 (4,5 ppm). Granice wybuchowosci: 5,6-41% obj. Temperatura samozaplonu 538 C. Preznosc par przy 20 C: 827 hPa. Rozpuszczalnosc w wodzie: nieograniczona.\n8. GLOWNE ZAGROZENIA: substancja bardzo toksyczna i duszaca, blokuje oddychanie tkankowe przez hamowanie oksydazy cytochromowej. Wchlania sie przez drogi oddechowe, skore i przewod pokarmowy. Przy stezeniu ok. 130 mg/m3 moze dojsc do utraty przytomnosci, drgawek, obrzeku pluc i smierci w ciagu 1 godziny, a przy 200-300 mg/m3 mozliwy jest natychmiastowy zgon.\n9. CO MOZE POJSC NIE TAK: oparcie rozpoznania tylko na zapachu, opoznienie tlenoterapii, kontakt skorny z ciecza lub roztworem, brak pewnosci co do przyczyny zatrucia przy podawaniu azotynu amylu oraz zlek
