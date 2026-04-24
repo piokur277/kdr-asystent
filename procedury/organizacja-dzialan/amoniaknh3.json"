@@ -1,7 +1,9 @@
 {
   "id": "KARTA-ORG-AMONIAK-NH3-WARTOSCI-GRANICZNE",
-  "zrodlo": "Dane przekazane przez uzytkownika",
+  "kategoria": "substancja",
+  "zrodlo": "CIOP-PIB, Baza niebezpiecznych substancji chemicznych, Amoniak",
   "data_aktualizacji": "",
+  "slowo_kluczowe": "amoniak",
   "keywords": [
     "amoniak",
     "nh3",
@@ -12,8 +14,13 @@
     "ndsch amoniak",
     "wyciek amoniaku",
     "ciekly amoniak",
-    "toksycznosc amoniaku"
+    "toksycznosc amoniaku",
+    "cas 7664-41-7",
+    "h221",
+    "h331",
+    "h314",
+    "h400"
   ],
-  "prefix": "Amoniak (NH3) - wartosci graniczne stezenia, zagrozenia i podstawowe postepowanie.",
-  "content": "1. Amoniak (NH3) jest toksycznym i drazniacym gazem, a jego stezenie w powietrzu jest scisle regulowane ze wzgledu na zagrozenie dla zdrowia i zycia.\n2. NDS (Najwyzsze Dopuszczalne Stezenie - 8h): 14 mg/m3 lub 20 ppm.\n3. NDSCh (Najwyzsze Dopuszczalne Stezenie Chwilowe): 28 mg/m3 lub 40 ppm; niektore zrodla podaja 50 ppm.\n4. Prog zapachu: amoniak jest wyczuwalny przy bardzo niskich stezeniach, czesto juz od ok. 5-50 ppm.\n5. Ponizej 50 ppm: dzialanie drazniace na oczy i drogi oddechowe.\n6. 50-100 ppm: silne podraznienie, lzawienie oczu, kaszel i bol gardla.\n7. 400-700 ppm: prog bezposredniego zagrozenia, oparzenia chemiczne spojowek oraz sluzowki nosa i gardla.\n8. Powyzej 1000 ppm: powazne oparzenia drog oddechowych i ryzyko obrzeku pluc.\n9. Ok. 1500 ppm: zgon w ciagu 30 minut.\n10. Powyzej 5000 ppm: natychmiastowe zagrozenie zycia i zgon w krotkim czasie.\n11. Amoniak powoduje powazne oparzenia skory oraz uszkodzenia oczu, w tym ciezkie oparzenia chemiczne.\n12. Wdychanie oparow prowadzi do silnego podraznienia, trudnosci w oddychaniu, a przy wyzszych stezeniach do obrzeku pluc i smierci.\n13. Mieszanina amoniaku z powietrzem w stezeniu 15-28% objetosciowo jest latwopalna.\n14. Kontakt z cieklym amoniakiem powoduje odmrozenia skory.\n15. W przypadku wycieku, o ile to mozliwe, nalezy unikac bezposredniego kontaktu i ewakuowac sie w bezpieczne miejsce."
+  "prefix": "NH3 / Amoniak - karta zagrozenia operacyjnego.",
+  "content": "1. KOD / NAZWA: NH3 - amoniak; CAS 7664-41-7.\n2. ROZPOZNANIE: bezbarwny gaz o ostrym, charakterystycznym zapachu. Gestosc par wzgledem powietrza wynosi 0,597, czyli gaz jest lzejszy od powietrza. Prog wyczuwalnosci zapachu wedlug CIOP wynosi 0,4-40 mg/m3.\n3. STREFA: brak jednej liczbowej strefy w materiale CIOP; przyjmij natychmiastowe odsuniecie osob z narazenia, eliminacje zrodel zaplonu i dobra wentylacje miejsca zdarzenia. W przypadku plynacego wycieku gazu nie gasic plomienia, jezeli nie mozna bezpiecznie zahamowac wycieku.\n4. SOI: zgodnie z informacja CLP stosowac rekawice ochronne, odziez ochronna, ochrone oczu i twarzy. Ze wzgledu na toksycznosc inhalacyjna i dzialanie zarace nalezy traktowac ekspozycje jako zagrozenie ciezkim urazem.\n5. DZIALANIA KRYTYCZNE: wyprowadzic lub wyniesc poszkodowanego na swieze powietrze i zapewnic mu warunki do swobodnego oddychania. Podawac tlen. Przy narazeniu inhalacyjnym zapewnic spokoj i bezruch, bo wysilek zwieksza ryzyko obrzeku pluc. Przy wycieku wyeliminowac wszystkie zrodla zaplonu.\n6. PROCEDURA SZCZEGOLOWA: klasyfikacja CLP obejmuje H221, H331, H314 i H400. W razie kontaktu ze skora natychmiast zdjac zanieczyszczona odziez i splukiwac skore pod strumieniem wody. W razie dostania sie do oczu plukac ostroznie woda przez kilka minut i natychmiast skierowac do lekarza. Przy zatruciu inhalacyjnym CIOP wskazuje tlen, a przy swiszczacym oddechu Atrovent do inhalacji; przy utrzymujacych sie objawach obrzeku krtani mozliwa jest intubacja i pilny transport do szpitala. Nie stosowac srodkow zobojetniajacych na skore.\n7. WARTOSCI GRANICZNE I PARAMETRY: NDS 14 mg/m3; NDSCh 28 mg/m3; NDSP nie ustalono. Temperatura wrzenia -33,35 C. Temperatura samozaplonu 630 C. Granice wybuchowosci w powietrzu 15-28% obj. Masa czasteczkowa 17,031.\n8. GLOWNE ZAGROZENIA: substancja toksyczna, drazniaca i zaraca. Powoduje oparzenia skory oraz uszkodzenia oczu. W postaci gazu i par moze wywolac bol i lzawienie oczu, kaszel, bol gardla, chrypke, mdlosci, wymioty, dusznosc, obrzek krtani, skurcz oskrzeli, zatrzymanie oddechu i obrzek pluc. Ciekly amoniak powoduje odmrozenia skory.\n9. CO MOZE POJSC NIE TAK: opoznienie ewakuacji ze strefy narazenia, niedoszacowanie ryzyka obrzeku pluc po inhalacji, gaszenie plonacego wycieku bez mozliwosci zatrzymania uwolnienia, oraz stosowanie srodkow zobojetniajacych na skazona skore.\n10. UWAGI OPERACYJNE: z materialu CIOP wynika, ze amoniak wchlania sie przez drogi oddechowe i z przewodu pokarmowego. LC50 dla szczura podano jako 7600 mg/m3 (2 h), a LCL0 jako 1420 mg/m3 (4 h). Odtrutki nie sa znane."
 }
