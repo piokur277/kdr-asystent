@@ -419,6 +419,7 @@
                 <button id="api-btn" class="toolbar-btn" type="button">Pokaz API</button>
                 <button id="voice-help-btn" class="toolbar-btn" type="button">Lista procedur - instrukcja</button>
                 <button id="install-btn" class="toolbar-btn hidden" type="button">Instalacja</button>
+                <button id="feedback-btn" class="toolbar-btn" type="button">Zglos problem/pomysl</button>
             </div>
 
             <div id="api-panel" class="api-panel hidden">
@@ -493,6 +494,7 @@
         ];
 
         const FALLBACK_URL = "procedury/baza.json";
+        const FEEDBACK_FORM_URL = "https://forms.gle/F3u9P3jn2RtieHA79";
         const SHOW_INFO_LOGS = false;
 
         const state = {
@@ -526,6 +528,7 @@
         const apiClearBtn = document.getElementById("api-clear-btn");
         const voiceHelpBtn = document.getElementById("voice-help-btn");
         const installBtn = document.getElementById("install-btn");
+        const feedbackBtn = document.getElementById("feedback-btn");
         const manualForm = document.getElementById("manual-form");
         const manualQuery = document.getElementById("manual-query");
         const userInputDisplay = document.getElementById("user-input-display");
@@ -1058,6 +1061,14 @@
             showInstallHelp();
         }
 
+        function openFeedbackForm() {
+            try {
+                window.open(FEEDBACK_FORM_URL, "_blank", "noopener,noreferrer");
+            } catch (error) {
+                location.href = FEEDBACK_FORM_URL;
+            }
+        }
+
         function showIosHelp() {
             if (!state.procedury.length) {
                 renderEmptyState("Brak zaladowanych procedur");
@@ -1154,6 +1165,7 @@
         apiClearBtn.addEventListener("click", clearApiKey);
         voiceHelpBtn.addEventListener("click", showIosHelp);
         installBtn.addEventListener("click", handleInstallClick);
+        feedbackBtn.addEventListener("click", openFeedbackForm);
 
         resetBtn.addEventListener("click", () => {
             if (state.openedFromList) {
