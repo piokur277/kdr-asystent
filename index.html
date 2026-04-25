@@ -243,7 +243,7 @@
 
         .proc-row {
             display: grid;
-            grid-template-columns: 28px 1fr auto;
+            grid-template-columns: 28px 1fr auto auto;
             gap: 8px;
             align-items: start;
             padding: 6px 0;
@@ -266,6 +266,23 @@
             font-weight: 600;
         }
 
+        .proc-open {
+            border: 0;
+            background: transparent;
+            color: #e2e8f0;
+            text-align: left;
+            font-size: 12px;
+            line-height: 1.35;
+            font-weight: 700;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .proc-open:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+
         .proc-key {
             color: #6ee7b7;
             border: 1px solid var(--ok);
@@ -278,6 +295,18 @@
             letter-spacing: 0.03em;
             white-space: nowrap;
             text-transform: lowercase;
+        }
+
+        .proc-copy {
+            border: 1px solid #334155;
+            background: rgba(15, 23, 42, 0.9);
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
         }
 
         .footer {
@@ -461,6 +490,8 @@
             procedury: [],
             aliasById: {},
             aliasToProcedureId: {},
+            listViewShown: false,
+            openedFromList: false,
             recognition: null,
             isListening: false,
             isBusy: false,
@@ -656,7 +687,7 @@
             procedureOutput.innerHTML = `<div class="empty-state">${escapeHtml(message)}</div>`;
         }
 
-        function renderProcedure(doc, sourceLabel) {
+        function renderProcedure(doc, sourceLabel, options = {}) {
             const lines = escapeHtml(doc.content)
                 .split("\n")
                 .filter(Boolean)
@@ -670,8 +701,48 @@
                 <div class="procedure-card">${lines}</div>
             `;
 
+            state.openedFromList = Boolean(options.fromList);
+            state.listViewShown = false;
             setResultMode(true);
             procedureScrollArea.scrollTop = 0;
+        }
+
+        function openProcedureFromList(procedureId) {
+            const procedure = state.procedury.find(item => item.id === procedureId);
+            if (!procedure) {
+                renderEmptyState("Brak danych");
+                return;
+            }
+            renderProcedure(procedure, "Lista procedur", { fromList: true });
+        }
+
+        async function copyToClipboard(text) {
+            const value = (text || "").trim();
+            if (!value) return false;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(value);
+                    return true;
+                } catch (error) {}
+            }
+
+            try {
+                const temp = document.createElement("textarea");
+                temp.value = value;
+                temp.setAttribute("readonly", "");
+                temp.style.position = "fixed";
+                temp.style.opacity = "0";
+                temp.style.left = "-9999px";
+                document.body.appendChild(temp);
+                temp.focus();
+                temp.select();
+                const ok = document.execCommand("copy");
+                document.body.removeChild(temp);
+                return Boolean(ok);
+            } catch (error) {
+                return false;
+            }
         }
 
         function scoreProcedure(query, procedure) {
@@ -764,6 +835,8 @@
                 return;
             }
 
+            state.openedFromList = false;
+            state.listViewShown = false;
             userInputDisplay.textContent = query;
             manualQuery.value = "";
             log(`Analiza: ${query}`);
@@ -773,7 +846,7 @@
                 renderEmptyState("Brak danych");
                 return;
             }
-            renderProcedure(procedure, source);
+            renderProcedure(procedure, source, { fromList: false });
         }
 
         function openKeyboardVoiceFallback(reason = "") {
@@ -932,8 +1005,8 @@
             }
 
             const instruction = IS_IOS
-                ? "Instrukcja iOS: przycisk Rozkaz otwiera pole Szukaj, aby uzyc mikrofonu klawiatury."
-                : "Instrukcja: wpisz haslo z kolumny HASLO w polu Szukaj i zatwierdz.";
+                ? "Instrukcja iOS: kliknij nazwe procedury, aby ja otworzyc. Opcjonalnie uzyj Kopiuj i wklej haslo do Szukaj."
+                : "Instrukcja: kliknij nazwe procedury, aby ja otworzyc. Opcjonalnie uzyj Kopiuj i wpisz haslo w Szukaj.";
 
             const rows = state.procedury.map((procedure, index) => {
                 const haslo = state.aliasById[procedure.id] || `p${index + 1}`;
@@ -941,8 +1014,9 @@
                 return `
                     <div class="proc-row">
                         <span class="proc-no">${index + 1}.</span>
-                        <span class="proc-name">${escapeHtml(name)}</span>
+                        <button class="proc-open" type="button" data-open-id="${escapeHtml(procedure.id)}">${escapeHtml(name)}</button>
                         <span class="proc-key">${escapeHtml(haslo)}</span>
+                        <button class="proc-copy" type="button" data-copy-haslo="${escapeHtml(haslo)}">Kopiuj</button>
                     </div>
                 `;
             }).join("");
@@ -952,6 +1026,8 @@
                 <div class="procedure-prefix">${escapeHtml(instruction)}</div>
                 <div class="procedure-card procedure-list">${rows}</div>
             `;
+            state.listViewShown = true;
+            state.openedFromList = false;
             setResultMode(true);
             procedureScrollArea.scrollTop = 0;
         }
@@ -990,6 +1066,27 @@
             }, 1200);
         });
 
+        procedureOutput.addEventListener("click", async event => {
+            const btn = event.target.closest("[data-copy-haslo]");
+            if (btn) {
+                const haslo = btn.getAttribute("data-copy-haslo") || "";
+                const copied = await copyToClipboard(haslo);
+
+                manualQuery.value = haslo;
+                manualQuery.focus();
+                try { manualQuery.setSelectionRange(haslo.length, haslo.length); } catch (error) {}
+                userInputDisplay.textContent = copied ? `Skopiowano haslo: ${haslo}` : `Haslo gotowe do wpisania: ${haslo}`;
+                return;
+            }
+
+            const openBtn = event.target.closest("[data-open-id]");
+            if (!openBtn) return;
+            const procedureId = openBtn.getAttribute("data-open-id") || "";
+            if (!procedureId) return;
+            userInputDisplay.textContent = "";
+            openProcedureFromList(procedureId);
+        });
+
         micBtn.addEventListener("click", startListening);
         apiBtn.addEventListener("click", toggleApiPanel);
         apiSaveBtn.addEventListener("click", saveApiKey);
@@ -997,8 +1094,17 @@
         voiceHelpBtn.addEventListener("click", showIosHelp);
 
         resetBtn.addEventListener("click", () => {
+            if (state.openedFromList) {
+                userInputDisplay.textContent = "";
+                manualQuery.value = "";
+                showIosHelp();
+                manualQuery.focus();
+                return;
+            }
             procedureOutput.innerHTML = '<div class="empty-state">Oczekiwanie na rozkaz</div>';
             userInputDisplay.textContent = "";
+            state.listViewShown = false;
+            state.openedFromList = false;
             setResultMode(false);
             resetListeningUi();
             clearIosInputSubmitTimer();
