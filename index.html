@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#020617">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="page-test.png">
     <title>KDR AI | System Procedur</title>
     <style>
         :root {
@@ -99,6 +103,12 @@
             color: #fca5a5;
             border-color: #7f1d1d;
             background: rgba(127, 29, 29, 0.2);
+        }
+
+        .toolbar-btn.install-ready {
+            border-color: var(--ok);
+            color: #6ee7b7;
+            background: var(--ok-soft);
         }
 
         .api-panel {
@@ -408,6 +418,7 @@
             <div class="toolbar">
                 <button id="api-btn" class="toolbar-btn" type="button">Pokaz API</button>
                 <button id="voice-help-btn" class="toolbar-btn" type="button">Lista procedur - instrukcja</button>
+                <button id="install-btn" class="toolbar-btn hidden" type="button">Instalacja</button>
             </div>
 
             <div id="api-panel" class="api-panel hidden">
@@ -497,7 +508,8 @@
             isBusy: false,
             hasSpeechResult: false,
             listenWatchdogId: null,
-            iosInputSubmitTimer: null
+            iosInputSubmitTimer: null,
+            deferredInstallPrompt: null
         };
 
         const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -513,6 +525,7 @@
         const apiSaveBtn = document.getElementById("api-save-btn");
         const apiClearBtn = document.getElementById("api-clear-btn");
         const voiceHelpBtn = document.getElementById("voice-help-btn");
+        const installBtn = document.getElementById("install-btn");
         const manualForm = document.getElementById("manual-form");
         const manualQuery = document.getElementById("manual-query");
         const userInputDisplay = document.getElementById("user-input-display");
@@ -813,6 +826,9 @@
                 if (aliasMatch) return { procedure: aliasMatch, source: "Haslo" };
             }
 
+            const localMatch = findLocalProcedure(query);
+            if (localMatch) return { procedure: localMatch, source: "Lokalna baza" };
+
             if (state.apiKey) {
                 try {
                     const aiId = await callAI(query, state.apiModel);
@@ -822,9 +838,6 @@
                     log(`AI niedostepne: ${error.message || "Blad AI"}`, true);
                 }
             }
-
-            const localMatch = findLocalProcedure(query);
-            if (localMatch) return { procedure: localMatch, source: "Lokalna baza" };
             return { procedure: null, source: "Brak" };
         }
 
@@ -998,6 +1011,53 @@
             }
         }
 
+        function updateInstallButton() {
+            if (!installBtn) return;
+            const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+            if (standalone) {
+                installBtn.classList.add("hidden");
+                installBtn.classList.remove("install-ready");
+                return;
+            }
+
+            installBtn.classList.remove("hidden");
+            const canPrompt = Boolean(state.deferredInstallPrompt);
+            installBtn.classList.toggle("install-ready", canPrompt);
+            installBtn.textContent = canPrompt ? "Zainstaluj app" : "Instalacja";
+        }
+
+        function showInstallHelp() {
+            const lines = [
+                "1. Aby znajomi mieli apke jak na pulpicie, udostepnij link HTTPS (np. GitHub Pages, Netlify).",
+                "2. Android (Chrome): menu -> Zainstaluj aplikacje / Dodaj do ekranu glownego.",
+                "3. iPhone (Safari): Udostepnij -> Do ekranu poczatkowego.",
+                "4. Komputer (Chrome/Edge): ikona instalacji w pasku adresu albo przycisk Zainstaluj app."
+            ].map(line => `<span class=\"procedure-line\">${escapeHtml(line)}</span>`).join("");
+
+            procedureOutput.innerHTML = `
+                <div class="source-badge">Instalacja PWA</div>
+                <div class="procedure-prefix">Instrukcja udostepniania i instalacji</div>
+                <div class="procedure-card">${lines}</div>
+            `;
+            state.listViewShown = false;
+            state.openedFromList = false;
+            setResultMode(true);
+            procedureScrollArea.scrollTop = 0;
+        }
+
+        async function handleInstallClick() {
+            if (state.deferredInstallPrompt) {
+                try {
+                    state.deferredInstallPrompt.prompt();
+                    await state.deferredInstallPrompt.userChoice;
+                } catch (error) {}
+                state.deferredInstallPrompt = null;
+                updateInstallButton();
+                return;
+            }
+            showInstallHelp();
+        }
+
         function showIosHelp() {
             if (!state.procedury.length) {
                 renderEmptyState("Brak zaladowanych procedur");
@@ -1039,6 +1099,7 @@
             }
             await loadProcedures();
             updateApiButton();
+            updateInstallButton();
             renderEmptyState("Oczekiwanie na rozkaz");
             setMicEnabled(true);
             log("Gotowosc bojowa.");
@@ -1092,6 +1153,7 @@
         apiSaveBtn.addEventListener("click", saveApiKey);
         apiClearBtn.addEventListener("click", clearApiKey);
         voiceHelpBtn.addEventListener("click", showIosHelp);
+        installBtn.addEventListener("click", handleInstallClick);
 
         resetBtn.addEventListener("click", () => {
             if (state.openedFromList) {
@@ -1132,6 +1194,24 @@
             if (state.recognition && state.isListening) {
                 try { state.recognition.abort(); } catch (error) {}
             }
+        });
+
+        if ("serviceWorker" in navigator && /^https?:$/i.test(location.protocol)) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("./sw.js").catch(() => {});
+            });
+        }
+
+        window.addEventListener("beforeinstallprompt", event => {
+            event.preventDefault();
+            state.deferredInstallPrompt = event;
+            updateInstallButton();
+        });
+
+        window.addEventListener("appinstalled", () => {
+            state.deferredInstallPrompt = null;
+            updateInstallButton();
+            log("Aplikacja zainstalowana.");
         });
 
         init();
