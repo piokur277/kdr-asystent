@@ -365,6 +365,93 @@
 
         .hidden { display: none !important; }
 
+        body.app-locked .app-shell {
+            pointer-events: none;
+            user-select: none;
+            filter: blur(2px);
+        }
+
+        .access-gate {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+            background: rgba(2, 6, 23, 0.82);
+            backdrop-filter: blur(4px);
+        }
+
+        .access-card {
+            width: min(440px, 100%);
+            border: 1px solid #334155;
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.97);
+            padding: 14px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+            display: grid;
+            gap: 10px;
+        }
+
+        .access-title {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #e2e8f0;
+        }
+
+        .access-subtitle {
+            margin: 0;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            line-height: 1.45;
+        }
+
+        .access-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .access-input {
+            width: 100%;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            background: rgba(2, 6, 23, 0.9);
+            color: #e2e8f0;
+            padding: 10px 11px;
+            font-size: 0.92rem;
+            outline: none;
+        }
+
+        .access-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.22);
+        }
+
+        .access-btn {
+            border: 1px solid #334155;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.95);
+            color: #e2e8f0;
+            font-size: 0.84rem;
+            font-weight: 800;
+            padding: 10px 13px;
+            cursor: pointer;
+        }
+
+        .access-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .access-error {
+            min-height: 16px;
+            color: #fca5a5;
+            font-size: 0.78rem;
+        }
+
         .listening {
             animation: pulse 1s infinite;
             background: rgba(127, 29, 29, 0.92) !important;
@@ -461,6 +548,19 @@
         </footer>
     </div>
 
+    <div id="access-gate" class="access-gate hidden" role="dialog" aria-modal="true" aria-labelledby="access-title">
+        <div class="access-card">
+            <div class="source-badge">Dostep aplikacji</div>
+            <h2 id="access-title" class="access-title">Wpisz kod dostepu</h2>
+            <p class="access-subtitle">Kod jest wymagany przed uruchomieniem procedur.</p>
+            <div class="access-row">
+                <input id="access-code-input" class="access-input" type="password" autocomplete="off" placeholder="Kod dostepu">
+                <button id="access-submit-btn" class="access-btn" type="button">Odblokuj</button>
+            </div>
+            <div id="access-error" class="access-error" aria-live="polite"></div>
+        </div>
+    </div>
+
     <script>
         const PLIKI = [
             "procedury/acetylen/karta-z1-butle-acetylen.json",
@@ -495,6 +595,9 @@
 
         const FALLBACK_URL = "procedury/baza.json";
         const FEEDBACK_FORM_URL = "https://forms.gle/F3u9P3jn2RtieHA79";
+        const ACCESS_ENABLED = true;
+        const ACCESS_CODE_HASH = "42c4545bf96e5df338af0984765ddc2e3555872c857ebc4e31f7c2f372114c5f";
+        const ACCESS_SESSION_KEY = "kdr_ai_access_ok";
         const SHOW_INFO_LOGS = false;
 
         const state = {
@@ -511,7 +614,8 @@
             hasSpeechResult: false,
             listenWatchdogId: null,
             iosInputSubmitTimer: null,
-            deferredInstallPrompt: null
+            deferredInstallPrompt: null,
+            isInitialized: false
         };
 
         const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -534,6 +638,10 @@
         const userInputDisplay = document.getElementById("user-input-display");
         const procedureOutput = document.getElementById("procedure-output");
         const procedureScrollArea = document.getElementById("procedure-scroll-area");
+        const accessGate = document.getElementById("access-gate");
+        const accessCodeInput = document.getElementById("access-code-input");
+        const accessSubmitBtn = document.getElementById("access-submit-btn");
+        const accessError = document.getElementById("access-error");
 
         function log(message, isError = false) {
             if (!debugConsole) return;
@@ -558,6 +666,103 @@
 
         function setResultMode(active) {
             document.body.classList.toggle("result-mode", active);
+        }
+
+        function setAccessGateVisible(visible) {
+            if (!accessGate) return;
+            accessGate.classList.toggle("hidden", !visible);
+            document.body.classList.toggle("app-locked", visible);
+        }
+
+        function setAccessError(message = "") {
+            if (!accessError) return;
+            accessError.textContent = message;
+        }
+
+        function setAccessBusy(isBusy) {
+            if (!accessSubmitBtn) return;
+            accessSubmitBtn.disabled = isBusy;
+            accessSubmitBtn.textContent = isBusy ? "Sprawdzam..." : "Odblokuj";
+        }
+
+        async function hashTextSHA256(value) {
+            const bytes = new TextEncoder().encode(value);
+            const digest = await crypto.subtle.digest("SHA-256", bytes);
+            return Array.from(new Uint8Array(digest))
+                .map(byte => byte.toString(16).padStart(2, "0"))
+                .join("");
+        }
+
+        async function verifyAccessCode(value) {
+            const code = (value || "").trim();
+            if (!code) return false;
+            if (!window.crypto || !window.crypto.subtle) return code === "KDR2026";
+            try {
+                const hash = await hashTextSHA256(code);
+                return hash === ACCESS_CODE_HASH;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function ensureInitialized() {
+            if (state.isInitialized) return;
+            state.isInitialized = true;
+            await init();
+        }
+
+        async function submitAccessCode() {
+            if (!ACCESS_ENABLED) {
+                await ensureInitialized();
+                return;
+            }
+            const value = (accessCodeInput?.value || "").trim();
+            if (!value) {
+                setAccessError("Podaj kod dostepu.");
+                accessCodeInput?.focus();
+                return;
+            }
+
+            setAccessBusy(true);
+            setAccessError("");
+            const ok = await verifyAccessCode(value);
+            if (!ok) {
+                setAccessBusy(false);
+                setAccessError("Niepoprawny kod. Sprobuj ponownie.");
+                accessCodeInput?.select();
+                return;
+            }
+
+            sessionStorage.setItem(ACCESS_SESSION_KEY, "1");
+            if (accessCodeInput) accessCodeInput.value = "";
+            setAccessGateVisible(false);
+            setAccessBusy(false);
+            await ensureInitialized();
+            manualQuery.focus();
+        }
+
+        async function bootstrapApp() {
+            if (!ACCESS_ENABLED) {
+                setAccessGateVisible(false);
+                await ensureInitialized();
+                return;
+            }
+
+            const unlocked = sessionStorage.getItem(ACCESS_SESSION_KEY) === "1";
+            if (unlocked) {
+                setAccessGateVisible(false);
+                await ensureInitialized();
+                return;
+            }
+
+            setAccessGateVisible(true);
+            setMicEnabled(false);
+            setAccessBusy(false);
+            setAccessError("");
+            if (accessCodeInput) {
+                accessCodeInput.value = "";
+                accessCodeInput.focus();
+            }
         }
 
         function updateApiButton() {
@@ -1166,6 +1371,15 @@
         voiceHelpBtn.addEventListener("click", showIosHelp);
         installBtn.addEventListener("click", handleInstallClick);
         feedbackBtn.addEventListener("click", openFeedbackForm);
+        if (accessSubmitBtn) accessSubmitBtn.addEventListener("click", submitAccessCode);
+        if (accessCodeInput) {
+            accessCodeInput.addEventListener("keydown", event => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    submitAccessCode();
+                }
+            });
+        }
 
         resetBtn.addEventListener("click", () => {
             if (state.openedFromList) {
@@ -1226,7 +1440,7 @@
             log("Aplikacja zainstalowana.");
         });
 
-        init();
+        bootstrapApp();
     </script>
 </body>
 </html>
