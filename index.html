@@ -235,6 +235,51 @@
 
         .step-no { color: var(--warn); }
 
+        .procedure-list {
+            padding: 10px 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .proc-row {
+            display: grid;
+            grid-template-columns: 28px 1fr auto;
+            gap: 8px;
+            align-items: start;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.45);
+        }
+
+        .proc-row:last-child { border-bottom: none; }
+
+        .proc-no {
+            color: var(--muted);
+            font-size: 11px;
+            text-align: left;
+        }
+
+        .proc-name {
+            color: #e2e8f0;
+            text-align: left;
+            font-size: 12px;
+            line-height: 1.35;
+            font-weight: 600;
+        }
+
+        .proc-key {
+            color: #6ee7b7;
+            border: 1px solid var(--ok);
+            background: var(--ok-soft);
+            border-radius: 999px;
+            padding: 2px 8px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+            text-transform: lowercase;
+        }
+
         .footer {
             position: static;
             display: flex;
@@ -333,7 +378,7 @@
 
             <div class="toolbar">
                 <button id="api-btn" class="toolbar-btn" type="button">Pokaz API</button>
-                <button id="voice-help-btn" class="toolbar-btn" type="button">Pomoc iOS</button>
+                <button id="voice-help-btn" class="toolbar-btn" type="button">Lista procedur - instrukcja</button>
             </div>
 
             <div id="api-panel" class="api-panel hidden">
@@ -414,6 +459,8 @@
             apiKey: localStorage.getItem("kdr_ai_api_key") || "",
             apiModel: localStorage.getItem("kdr_ai_api_model") || "gemini-3-flash-preview",
             procedury: [],
+            aliasById: {},
+            aliasToProcedureId: {},
             recognition: null,
             isListening: false,
             isBusy: false,
@@ -509,6 +556,37 @@
             return Array.from(map.values());
         }
 
+        function buildProcedureAliases() {
+            const used = new Set();
+            const aliasById = {};
+            const aliasToProcedureId = {};
+
+            state.procedury.forEach((procedure, index) => {
+                const rawSeed =
+                    (typeof procedure.slowo_kluczowe === "string" && procedure.slowo_kluczowe.trim()) ? procedure.slowo_kluczowe :
+                    (Array.isArray(procedure.keywords) && procedure.keywords.length > 0) ? procedure.keywords[0] :
+                    procedure.id;
+
+                let seed = normalizeText(rawSeed).split(" ")[0].replace(/[^a-z0-9]/g, "");
+                if (!seed) seed = `p${index + 1}`;
+                if (seed.length < 2) seed = `${seed}${index + 1}`;
+
+                let alias = seed;
+                let suffix = 2;
+                while (used.has(alias)) {
+                    alias = `${seed}${suffix}`;
+                    suffix += 1;
+                }
+
+                used.add(alias);
+                aliasById[procedure.id] = alias;
+                aliasToProcedureId[alias] = procedure.id;
+            });
+
+            state.aliasById = aliasById;
+            state.aliasToProcedureId = aliasToProcedureId;
+        }
+
         async function loadFallbackProcedures() {
             try {
                 const response = await fetch(`${FALLBACK_URL}?v=${Date.now()}`, { cache: "no-store" });
@@ -526,6 +604,7 @@
             const fallback = await loadFallbackProcedures();
             if (fallback.length > 0) {
                 state.procedury = dedupeProcedures(fallback);
+                buildProcedureAliases();
                 log(`Zaladowano ${state.procedury.length} procedur (baza.json).`);
                 return;
             }
@@ -543,6 +622,7 @@
             }
 
             state.procedury = dedupeProcedures(loaded);
+            buildProcedureAliases();
             log(`Zaladowano ${state.procedury.length} procedur.`);
         }
 
@@ -655,6 +735,13 @@
         }
 
         async function resolveProcedure(query) {
+            const aliasQuery = normalizeText(query).replace(/\s+/g, "");
+            const aliasId = state.aliasToProcedureId[aliasQuery];
+            if (aliasId) {
+                const aliasMatch = state.procedury.find(item => item.id === aliasId);
+                if (aliasMatch) return { procedure: aliasMatch, source: "Haslo" };
+            }
+
             if (state.apiKey) {
                 try {
                     const aiId = await callAI(query, state.apiModel);
@@ -839,10 +926,34 @@
         }
 
         function showIosHelp() {
-            const help = IS_IOS
-                ? "iOS: przycisk Rozkaz otwiera pole Szukaj, bo mikrofon klawiatury telefonu dziala stabilniej niz nasluch przegladarki."
-                : "Na urzadzeniach innych niz iOS przycisk Rozkaz korzysta z mikrofonu przegladarki po pozwoleniu.";
-            alert(help);
+            if (!state.procedury.length) {
+                renderEmptyState("Brak zaladowanych procedur");
+                return;
+            }
+
+            const instruction = IS_IOS
+                ? "Instrukcja iOS: przycisk Rozkaz otwiera pole Szukaj, aby uzyc mikrofonu klawiatury."
+                : "Instrukcja: wpisz haslo z kolumny HASLO w polu Szukaj i zatwierdz.";
+
+            const rows = state.procedury.map((procedure, index) => {
+                const haslo = state.aliasById[procedure.id] || `p${index + 1}`;
+                const name = procedure.prefix || procedure.id;
+                return `
+                    <div class="proc-row">
+                        <span class="proc-no">${index + 1}.</span>
+                        <span class="proc-name">${escapeHtml(name)}</span>
+                        <span class="proc-key">${escapeHtml(haslo)}</span>
+                    </div>
+                `;
+            }).join("");
+
+            procedureOutput.innerHTML = `
+                <div class="source-badge">Lista procedur</div>
+                <div class="procedure-prefix">${escapeHtml(instruction)}</div>
+                <div class="procedure-card procedure-list">${rows}</div>
+            `;
+            setResultMode(true);
+            procedureScrollArea.scrollTop = 0;
         }
 
         async function init() {
