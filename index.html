@@ -1,100 +1,100 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>KDR AI | v24 CACHE-TEST</title>
+    <title>KDR AI | v21 SAFE</title>
     <style>
         * { box-sizing: border-box; }
 
         html, body {
             margin: 0;
-            padding: 0;
             min-height: 100%;
-        }
-
-        body {
-            background: #eef2ff;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: #f3f4f6;
             color: #0f172a;
-            font-family: Arial, Helvetica, sans-serif;
-            padding: 10px;
         }
 
-        #diag {
-            background: #fde047;
-            color: #111827;
-            border: 2px solid #f59e0b;
-            border-radius: 8px;
-            padding: 8px 10px;
-            font-weight: 700;
-            font-size: 12px;
-            margin-bottom: 10px;
-        }
+        body { padding: 10px; }
 
         .app {
             max-width: 920px;
             margin: 0 auto;
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 12px;
+            min-height: calc(100vh - 20px);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        h1 {
+        .header {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .title {
             margin: 0;
-            font-size: 22px;
+            font-size: 1.05rem;
+            font-weight: 900;
             color: #b91c1c;
             text-transform: uppercase;
-            letter-spacing: 0.02em;
+            letter-spacing: -0.02em;
         }
 
         .version {
-            margin: 4px 0 10px 0;
-            font-size: 12px;
-            color: #334155;
+            margin-top: 4px;
+            font-size: 0.75rem;
+            color: #475569;
             font-weight: 700;
         }
 
-        #search-form {
+        .toolbar {
+            margin-top: 10px;
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
         }
 
-        #query {
-            flex: 1 1 240px;
-            min-height: 40px;
-            padding: 8px 10px;
-            border: 1px solid #94a3b8;
-            border-radius: 10px;
-            font-size: 16px;
-            color: #0f172a;
-            background: #ffffff;
-        }
-
-        .btn {
-            min-height: 40px;
-            padding: 8px 12px;
-            border: 1px solid #64748b;
-            border-radius: 10px;
-            background: #f8fafc;
-            color: #0f172a;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        #status {
-            min-height: 18px;
-            margin-top: 8px;
-            text-align: center;
-            font-size: 12px;
-            color: #475569;
-            font-weight: 700;
-        }
-
-        #output-wrap {
-            margin-top: 8px;
+        button, input {
             border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #0f172a;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 9px 12px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            outline: none;
+        }
+
+        .search {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+        }
+
+        .status {
+            min-height: 18px;
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .output-wrap {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
