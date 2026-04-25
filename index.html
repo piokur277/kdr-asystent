@@ -295,6 +295,112 @@
             line-height: 1.45;
         }
 
+        .help-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 90;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            background: rgba(2, 6, 23, 0.82);
+            backdrop-filter: blur(8px);
+        }
+
+        .help-card {
+            width: min(100%, 920px);
+            max-height: 84vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #334155;
+            border-radius: 18px;
+            background: rgba(15, 23, 42, 0.98);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        .help-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .help-title {
+            margin: 0;
+            font-size: 0.98rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #f8fafc;
+        }
+
+        .help-close {
+            border: 1px solid #334155;
+            background: rgba(15, 23, 42, 0.9);
+            color: #f8fafc;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .help-body {
+            overflow-y: auto;
+            padding: 14px 16px 18px;
+        }
+
+        .help-section + .help-section {
+            margin-top: 18px;
+        }
+
+        .help-section-title {
+            margin: 0 0 10px;
+            color: #facc15;
+            font-size: 0.78rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .help-list {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .help-list li {
+            margin-bottom: 12px;
+            line-height: 1.4;
+            color: #e2e8f0;
+        }
+
+        .help-name {
+            display: block;
+            font-weight: 700;
+        }
+
+        .help-keyword {
+            display: inline-block;
+            margin-top: 4px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid #334155;
+            background: rgba(2, 6, 23, 0.8);
+            color: #6ee7b7;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+        }
+
+        .help-note {
+            margin: 0 0 8px;
+            color: #cbd5e1;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
         body.result-mode .mic-btn,
         body.result-mode .reset-btn {
             width: auto;
@@ -320,6 +426,19 @@
             .toolbar-btn { width: 100%; }
 
             #debug-console { height: 64px; }
+
+            .help-card {
+                max-height: 88vh;
+            }
+
+            .help-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .help-close {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -333,7 +452,7 @@
 
             <div class="toolbar">
                 <button id="api-btn" class="toolbar-btn" type="button">Pokaz API</button>
-                <button id="voice-help-btn" class="toolbar-btn" type="button">Pomoc iOS</button>
+                <button id="voice-help-btn" class="toolbar-btn" type="button">Lista procedur oraz instrukcja</button>
             </div>
 
             <div id="api-panel" class="api-panel hidden">
@@ -373,6 +492,16 @@
                 <button id="reset-btn" class="reset-btn hidden" type="button">Gotowy</button>
             </div>
         </footer>
+    </div>
+
+    <div id="help-modal" class="help-modal hidden" aria-hidden="true">
+        <div class="help-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+            <div class="help-header">
+                <h2 id="help-title" class="help-title">Lista procedur oraz instrukcja</h2>
+                <button id="help-close-btn" class="help-close" type="button">Zamknij</button>
+            </div>
+            <div id="help-modal-body" class="help-body"></div>
+        </div>
     </div>
 
     <script>
@@ -450,6 +579,78 @@
         ];
 
         const FALLBACK_URL = "procedury/baza.json";
+        const PROCEDURE_ALIASES = {
+            "KARTA-ACETYLEN-Z1": "acz1",
+            "KARTA-ACETYLEN-Z2": "acz2",
+            "KARTA-ACETYLEN-Z3": "acz3",
+            "KARTA-ACETYLEN-Z4": "acz4",
+            "KARTA-ACETYLEN-PRZEKAZANIE": "acprzek",
+            "KARTA-ACETYLEN-ROZPOZNANIE": "acrozp",
+            "KARTA-BUD-INFORMACJE-DODATKOWE-KATASTROFA-BUDOWLANA": "budinfo",
+            "KARTA-BUD-ORGANIZACJA-DZIALAN-KATASTROFA-BUDOWLANA": "budorg",
+            "KARTA-BUD-PRIORYTETY-TYPOW-ZAWALEN": "budtypy",
+            "KARTA-BUD-PRZEKAZANIE-KATASTROFA-BUDOWLANA": "budprzek",
+            "KARTA-BUD-ROZPOZNANIE-KATASTROFA-BUDOWLANA": "budrozp",
+            "KARTA-BUD-STREFA-I-EWAKUACJA-KATASTROFA-BUDOWLANA": "budstrefa",
+            "KARTA-BUD-ZABEZPIECZENIE-LOGISTYCZNE-KATASTROFA-BUDOWLANA": "budlog",
+            "KARTA-CHEM-Z1-LNG-POZAR-ZEW": "lngz1",
+            "KARTA-CHEM-Z2-LNG-POZAR-STRUM": "lngz2",
+            "KARTA-CHEM-Z3-LNG-POZAR-ROZLEWISKA": "lngz3",
+            "KARTA-CHEM-Z4-LNG-WYCIEK": "lngz4",
+            "KARTA-CHEM-Z5-LNG-ZAWORY": "lngz5",
+            "KARTA-CHEM-B1-ZAGROZENIE-BIOLOGICZNE-GR3-GR4": "biogr34",
+            "KARTA-CHEM-B22-PODEJRZANA-PRZESYLKA-CBR": "cbrpak",
+            "KARTA-CHEM-R1-OCHRONA-RADIOLOGICZNA": "radr1",
+            "KARTA-CHEM-R2-ZDARZENIA-RADIACYJNE-ZAKRES-PODSTAWOWY": "radr2",
+            "DEZ-EV-01": "evdez",
+            "KARTA-PV-INFORMACJE-DODATKOWE": "pvinfo",
+            "KARTA-PV-Z1-POZAR": "pvz1",
+            "KARTA-PV-Z2-MIEJSCOWE-ZAGROZENIE": "pvz2",
+            "KARTA-PV-PRZEKAZANIE": "pvprzek",
+            "KARTA-PV-ROZPOZNANIE-I-ZABEZPIECZENIE": "pvrozp",
+            "KARTA-KPP-AMPUTACJA-URAZOWA": "kppamp",
+            "KARTA-KPP-KOBIETA-W-CIAZY-ZAGROZENIE": "kppciaz",
+            "KARTA-KPP-OBRAZENIA-BRZUCHA": "kppbrzu",
+            "KARTA-KPP-OBRAZENIA-GLOWY": "kppglow",
+            "KARTA-KPP-OBRAZENIA-KLATKI-PIERSIOWEJ": "kppklat",
+            "KARTA-KPP-OBRAZENIA-KREGOSLUPA": "kppkreg",
+            "KARTA-KPP-OBRAZENIA-MIEDNICY": "kppmied",
+            "KARTA-KPP-OBRAZENIA-NARZADU-RUCHU": "kppruch",
+            "KARTA-KPP-OPARZENIE-CHEMICZNE": "kppchem",
+            "KARTA-KPP-OPARZENIE-TERMICZNE": "kppterm",
+            "KARTA-KPP-RANY": "kpprany",
+            "KARTA-KPP-RKO-DOROSLI": "kpprkod",
+            "KARTA-KPP-RKO-DZIECI-NIEMOWLETA-NOWORODKI": "kpprkodz",
+            "KARTA-KPP-SEKWENCJA-MEDYCZNYCH-DZIALAN-RATOWNICZYCH": "kppseq",
+            "KARTA-KPP-SEKWENCJA-ZALOZEN-TAKTYCZNYCH": "kpptakt",
+            "KARTA-KPP-TONIECIE": "kppton",
+            "KARTA-KPP-WSPARCIE-PSYCHICZNE": "kpppsy",
+            "KARTA-KPP-WYCHLODZENIE": "kppwych",
+            "KARTA-KPP-STANY-NIEURAZOWE": "kppnieu",
+            "KARTA-KPP-ZATRUCIE-WZIEWNE": "kppwziew",
+            "KARTA-ORG-AMONIAK-NH3-WARTOSCI-GRANICZNE": "nh3",
+            "KARTA-ORG-CBRNE-DODATKOWE-USTALENIA-SZKOLENIA": "cbrszkol",
+            "KARTA-ORG-CHLOROWODOR-WARTOSCI-GRANICZNE": "hcl",
+            "KARTA-ORG-CO-WARTOSCI-GRANICZNE": "czad",
+            "KARTA-ORG-DETEKTOR-MSA-ALTAIR-4X": "altair",
+            "KARTA-ORG-H2S-WARTOSCI-GRANICZNE": "h2s",
+            "KARTA-ORG-HCN-WARTOSCI-GRANICZNE": "hcn",
+            "KARTA-ORG-METODYKA-ORGANIZACJI-LACZNOSCI-KDR": "ppsis",
+            "KARTA-ORG-WYTYCZNE-WSPOLDZIALANIA-CBRNE": "cbrne",
+            "KARTA-ORG-ZASADY-ORGANIZOWANIA-DZIALAN-RATOWNICZYCH": "odwod",
+            "POZ-EV-01": "evpozar",
+            "KARTA-PTASIA-GRYPA-INFORMACJE-I-ZASADY": "ptasiainfo",
+            "KARTA-PTASIA-GRYPA-NADZOR-EPIDEMIOLOGICZNY": "ptasianadz",
+            "KARTA-PTASIA-GRYPA-SOI-I-DEKONTAMINACJA": "ptasiadeko",
+            "WYP-EV-01": "evwypadek",
+            "WYP-MAS-01": "evmasowy",
+            "ZAT-EV-01": "evzatop",
+            "KARTA-ZA-CEL-ZAKRES-MONITOROWANIA": "algacel",
+            "KARTA-ZA-CZYNNIKI-RYZYKA": "algarzyko",
+            "KARTA-ZA-POSTEPOWANIE": "algapost",
+            "KARTA-ZA-POZIOMY-ALARMOWE": "alalarm",
+            "KARTA-ZA-WSKAZNIKI-BADANE": "algawsk"
+        };
 
         const state = {
             apiKey: localStorage.getItem("kdr_ai_api_key") || "",
@@ -476,6 +677,9 @@
         const apiSaveBtn = document.getElementById("api-save-btn");
         const apiClearBtn = document.getElementById("api-clear-btn");
         const voiceHelpBtn = document.getElementById("voice-help-btn");
+        const helpModal = document.getElementById("help-modal");
+        const helpModalBody = document.getElementById("help-modal-body");
+        const helpCloseBtn = document.getElementById("help-close-btn");
         const manualForm = document.getElementById("manual-form");
         const manualQuery = document.getElementById("manual-query");
         const userInputDisplay = document.getElementById("user-input-display");
@@ -545,6 +749,17 @@
             return Array.from(map.values());
         }
 
+        function getProcedureAlias(procedure) {
+            return PROCEDURE_ALIASES[procedure.id] || procedure.slowo_kluczowe || normalizeText(procedure.id).replace(/\s+/g, "");
+        }
+
+        function enrichProcedure(procedure) {
+            return {
+                ...procedure,
+                haslo_wykazu: getProcedureAlias(procedure)
+            };
+        }
+
         async function loadFallbackProcedures() {
             try {
                 const response = await fetch(`${FALLBACK_URL}?v=${Date.now()}`, { cache: "no-store" });
@@ -572,7 +787,7 @@
             }
 
             const fallback = await loadFallbackProcedures();
-            state.procedury = dedupeProcedures([...loaded, ...fallback]);
+            state.procedury = dedupeProcedures([...loaded, ...fallback]).map(enrichProcedure);
             log(`Zaladowano ${state.procedury.length} procedur.`);
         }
 
@@ -628,9 +843,12 @@
             const normalizedQuery = normalizeText(query);
             const tokens = normalizedQuery.split(" ").filter(token => token.length > 2);
             const prefix = normalizeText(procedure.prefix);
+            const alias = normalizeText(procedure.haslo_wykazu || "");
             let score = 0;
 
             if (normalizedQuery === normalizeText(procedure.id)) score += 300;
+            if (alias && normalizedQuery === alias) score += 400;
+            if (alias && normalizedQuery.includes(alias)) score += 220;
             if (procedure.slowo_kluczowe && normalizedQuery.includes(normalizeText(procedure.slowo_kluczowe))) score += 180;
             if (prefix.includes(normalizedQuery) && normalizedQuery.length > 4) score += 120;
 
@@ -645,6 +863,20 @@
             });
 
             return score;
+        }
+
+        function closeHelpModal() {
+            helpModal.classList.add("hidden");
+            helpModal.setAttribute("aria-hidden", "true");
+        }
+
+        function buildProcedureListHtml() {
+            return state.procedury.map(procedure => `
+                <li>
+                    <span class="help-name">${escapeHtml(procedure.prefix)}</span>
+                    <span class="help-keyword">Haslo: ${escapeHtml(procedure.haslo_wykazu)}</span>
+                </li>
+            `).join("");
         }
 
         function findLocalProcedure(query) {
@@ -869,10 +1101,20 @@
         }
 
         function showIosHelp() {
-            const help = IS_IOS
-                ? "iOS: przycisk Rozkaz otwiera pole Szukaj, bo mikrofon klawiatury telefonu dziala stabilniej niz nasluch przegladarki."
-                : "Na urzadzeniach innych niz iOS przycisk Rozkaz korzysta z mikrofonu przegladarki po pozwoleniu.";
-            alert(help);
+            helpModalBody.innerHTML = `
+                <div class="help-section">
+                    <p class="help-section-title">Lista procedur</p>
+                    <ol class="help-list">${buildProcedureListHtml()}</ol>
+                </div>
+                <div class="help-section">
+                    <p class="help-section-title">Instrukcja mikrofonu</p>
+                    <p class="help-note">iOS: przycisk Rozkaz otwiera pole Szukaj, bo mikrofon klawiatury telefonu dziala stabilniej niz nasluch przegladarki.</p>
+                    <p class="help-note">Na urzadzeniach innych niz iOS przycisk Rozkaz korzysta z mikrofonu przegladarki po pozwoleniu.</p>
+                    <p class="help-note">Kazda procedura ma przypisane jedno unikalne haslo. Wpisz je w polu Szukaj, aby bezposrednio otworzyc wlasciwa karte.</p>
+                </div>
+            `;
+            helpModal.classList.remove("hidden");
+            helpModal.setAttribute("aria-hidden", "false");
         }
 
         async function init() {
@@ -910,6 +1152,10 @@
         apiSaveBtn.addEventListener("click", saveApiKey);
         apiClearBtn.addEventListener("click", clearApiKey);
         voiceHelpBtn.addEventListener("click", showIosHelp);
+        helpCloseBtn.addEventListener("click", closeHelpModal);
+        helpModal.addEventListener("click", event => {
+            if (event.target === helpModal) closeHelpModal();
+        });
 
         resetBtn.addEventListener("click", () => {
             procedureOutput.innerHTML = '<div class="empty-state">Oczekiwanie na rozkaz</div>';
@@ -940,6 +1186,12 @@
             clearIosInputSubmitTimer();
             if (state.recognition && state.isListening) {
                 try { state.recognition.abort(); } catch (error) {}
+            }
+        });
+
+        window.addEventListener("keydown", event => {
+            if (event.key === "Escape" && !helpModal.classList.contains("hidden")) {
+                closeHelpModal();
             }
         });
 
