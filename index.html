@@ -883,80 +883,42 @@
             state.aliasToProcedureId = aliasToProcedureId;
         }
 
-        async function loadProcedures() {
-    log("Pobieranie bazy procedur...");
-
-    try {
-        const response = await fetch(
-            `${FALLBACK_URL}?v=${Date.now()}`,
-            { cache: "no-store" }
-        );
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const json = await response.json();
-
-        if (!Array.isArray(json)) {
-            throw new Error("Plik baza.json nie zawiera tablicy procedur.");
-        }
-
-        state.procedury = dedupeProcedures(
-            json.filter(validateProcedure)
-        );
-
-        buildProcedureAliases();
-
-        log(`Pobrano ${state.procedury.length} procedur do pamięci.`);
-        return;
-    } catch (error) {
-        log(
-            `Nie udało się pobrać baza.json. Próba pobrania osobnych plików: ${error.message}`,
-            true
-        );
-    }
-
-    const results = await Promise.all(
-        PLIKI.map(async file => {
+        async function loadFallbackProcedures() {
             try {
-                const response = await fetch(
-                    `${file}?v=${Date.now()}`,
-                    { cache: "no-store" }
-                );
-
-                if (!response.ok) {
-                    log(`Nie znaleziono pliku: ${file}`, true);
-                    return null;
-                }
-
-                const text = await response.text();
-                const json = JSON.parse(text);
-
-                if (!validateProcedure(json)) {
-                    log(`Nieprawidłowa struktura pliku: ${file}`, true);
-                    return null;
-                }
-
-                return json;
+                const response = await fetch(`${FALLBACK_URL}?v=${Date.now()}`, { cache: "no-store" });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const json = await response.json();
+                if (Array.isArray(json)) return json.filter(validateProcedure);
+                return [];
             } catch (error) {
-                log(
-                    `Błąd pliku ${file}: zły format JSON lub błąd sieci`,
-                    true
-                );
-                return null;
+                log("Nie udalo sie wczytac procedury/baza.json.", true);
+                return [];
             }
-        })
-    );
+        }
 
-    state.procedury = dedupeProcedures(
-        results.filter(Boolean)
-    );
-
-    buildProcedureAliases();
-
-    log(`Pobrano ${state.procedury.length} procedur do pamięci.`);
-}
+        async function loadProcedures() {
+            log("Pobieranie najnowszych procedur z GitHuba...");
+            const loaded = [];
+            
+            for (const file of PLIKI) {
+                try {
+                    const response = await fetch(`${file}?v=${Date.now()}`, { cache: "no-store" });
+                    
+                    if (!response.ok) {
+                        log(`Nie znaleziono pliku: ${file}`, true);
+                        continue;
+                    }
+                    
+                    const buffer = await response.arrayBuffer();
+                    const text = new TextDecoder('utf-8').decode(buffer);
+                    const json = JSON.parse(text);
+                    
+                    if (validateProcedure(json)) {
+                        loaded.push(json);
+                    }
+                } catch (error) {
+                    log(`Błąd pliku ${file}: Zły format JSON lub błąd sieci`, true);
+                }
             }
             
             state.procedury = dedupeProcedures(loaded);
