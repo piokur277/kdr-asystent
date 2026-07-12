@@ -1308,21 +1308,32 @@
             procedureScrollArea.scrollTop = 0;
         }
 
-        async function init() {
-            if (!SHOW_INFO_LOGS && debugConsole) {
-                debugConsole.classList.add("hidden");
-                debugConsole.innerHTML = "";
+      async function init() {
+            log("Pobieranie procedur z GitHub...");
+            for (const f of PLIKI) {
+                try {
+                    // Dodajemy unikalny znacznik czasu, aby ominąć starą pamięć podręczną (cache)
+                    const r = await fetch(`${f}?v=${Date.now()}`, {
+                        headers: {
+                            // KLUCZ: Wymuszamy na przeglądarce poprawne czytanie polskich znaków UTF-8
+                            'Accept': 'application/json; charset=utf-8'
+                        }
+                    });
+                    if (r.ok) {
+                        PROCEDURY.push(await r.json());
+                        log(`Wczytano: ${f}`);
+                    } else {
+                        log(`Błąd pliku ${f}: ${r.status}`, true);
+                    }
+                } catch (e) { log(`Błąd sieci pliku: ${f}`, true); }
             }
-            await loadProcedures();
-            updateApiButton();
-            updateInstallButton();
-            renderEmptyState("Oczekiwanie na rozkaz");
-            setMicEnabled(true);
-            log("Gotowosc bojowa.");
-            if (IS_IOS) log("Tryb iOS aktywny.");
-            if (IS_STANDALONE) log("Tryb PWA aktywny.");
-            if (!window.isSecureContext && location.protocol !== "file:") {
-                log("Uwaga: mikrofon wymaga HTTPS lub localhost.", true);
+
+            if (PROCEDURY.length > 0) {
+                API_KEY = prompt("Wklej API Key (z Twojego panelu):")?.trim();
+                const mic = document.getElementById('mic-btn');
+                mic.disabled = false;
+                mic.classList.replace('text-slate-400', 'text-white');
+                log("SYSTEM GOTOWY DO PRACY.");
             }
         }
 
