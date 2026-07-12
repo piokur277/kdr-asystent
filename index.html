@@ -853,29 +853,46 @@
         }
 
         async function loadProcedures() {
-            const fallback = await loadFallbackProcedures();
-            if (fallback.length > 0) {
-                state.procedury = dedupeProcedures(fallback);
-                buildProcedureAliases();
-                log(`Zaladowano ${state.procedury.length} procedur (baza.json).`);
-                return;
-            }
-
+            log("Pobieranie najnowszych procedur z GitHuba...");
             const loaded = [];
+            
             for (const file of PLIKI) {
                 try {
                     const response = await fetch(`${file}?v=${Date.now()}`, { cache: "no-store" });
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    const json = await response.json();
-                    if (validateProcedure(json)) loaded.push(json);
+                    
+                    if (!response.ok) {
+                        log(`Nie znaleziono pliku: ${file}`, true);
+                        continue;
+                    }
+                    
+                    const buffer = await response.arrayBuffer();
+                    const text = new TextDecoder('utf-8').decode(buffer);
+                    const json = JSON.parse(text);
+                    
+                    if (validateProcedure(json)) {
+                        loaded.push(json);
+                    }
                 } catch (error) {
-                    log(`Plik ${file} niedostepny lub zablokowany.`);
+                    log(`Błąd pliku ${file}: Zły format JSON lub błąd sieci`, true);
                 }
             }
-
+            
             state.procedury = dedupeProcedures(loaded);
             buildProcedureAliases();
-            log(`Zaladowano ${state.procedury.length} procedur.`);
+            log(`Pobrano ${state.procedury.length} procedur do pamięci.`);
+        }
+
+        async function init() {
+            log("Inicjalizacja systemu bazowego...");
+            await loadProcedures();
+
+            if (state.procedury.length > 0) {
+                setMicEnabled(true);
+                updateApiButton();
+                log("SYSTEM GOTOWY DO PRACY.");
+            } else {
+                log("BŁĄD KRYTYCZNY: Nie udało się pobrać żadnych procedur!", true);
+            }
         }
 
         function getRecognitionCtor() {
@@ -1308,24 +1325,6 @@
             procedureScrollArea.scrollTop = 0;
         }
 
-        async function init() {
-            if (!SHOW_INFO_LOGS && debugConsole) {
-                debugConsole.classList.add("hidden");
-                debugConsole.innerHTML = "";
-            }
-            await loadProcedures();
-            updateApiButton();
-            updateInstallButton();
-            renderEmptyState("Oczekiwanie na rozkaz");
-            setMicEnabled(true);
-            log("Gotowosc bojowa.");
-            if (IS_IOS) log("Tryb iOS aktywny.");
-            if (IS_STANDALONE) log("Tryb PWA aktywny.");
-            if (!window.isSecureContext && location.protocol !== "file:") {
-                log("Uwaga: mikrofon wymaga HTTPS lub localhost.", true);
-            }
-        }
-
         manualForm.addEventListener("submit", event => {
             event.preventDefault();
             clearIosInputSubmitTimer();
@@ -1371,6 +1370,7 @@
         voiceHelpBtn.addEventListener("click", showIosHelp);
         installBtn.addEventListener("click", handleInstallClick);
         feedbackBtn.addEventListener("click", openFeedbackForm);
+        
         if (accessSubmitBtn) accessSubmitBtn.addEventListener("click", submitAccessCode);
         if (accessCodeInput) {
             accessCodeInput.addEventListener("keydown", event => {
