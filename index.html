@@ -1308,32 +1308,52 @@
             procedureScrollArea.scrollTop = 0;
         }
 
-    async function init() {
-            log("Rozpoczynam diagnostykę bazy...");
-            for (const f of PLIKI) {
+    async function loadProcedures() {
+            log("Pobieranie najnowszych procedur z GitHuba...");
+            const loaded = [];
+            
+            for (const file of PLIKI) {
                 try {
-                    const r = await fetch(`${f}?v=${Date.now()}`);
-                    if (!r.ok) {
-                        log(`[BLAD SERWERA ${r.status}] ${f}`, true);
+                    // Czysty fetch omijający pamięć podręczną, bez blokujących nagłówków
+                    const response = await fetch(`${file}?v=${Date.now()}`, { cache: "no-store" });
+                    
+                    if (!response.ok) {
+                        log(`Nie znaleziono pliku: ${file}`, true);
                         continue;
                     }
                     
-                    const text = await r.text(); // Pobieramy czysty tekst
+                    // KLUCZOWE: Wymuszenie UTF-8 na poziomie odczytu bajtów dla polskich znaków
+                    const buffer = await response.arrayBuffer();
+                    const text = new TextDecoder('utf-8').decode(buffer);
+                    const json = JSON.parse(text);
                     
-                    try {
-                        const json = JSON.parse(text); // Próbujemy złożyć z tego JSON
-                        PROCEDURY.push(json);
-                        log(`Wczytano OK: ${f}`);
-                    } catch(parseErr) {
-                        // KLUCZOWE: Jeśli zepsułeś plik na GitHubie, to nam o tym powie!
-                        log(`[ZŁY FORMAT JSON] ${f}: ${parseErr.message}`, true);
+                    if (validateProcedure(json)) {
+                        loaded.push(json);
                     }
-
-                } catch (e) { 
-                    // To pokaże prawdziwy błąd połączenia, jeśli taki istnieje
-                    log(`[BLAD SIECI] ${f}: ${e.message}`, true); 
+                } catch (error) {
+                    log(`Błąd pliku ${file}: Zły format JSON lub błąd sieci`, true);
                 }
             }
+            
+            // Zapis do prawidłowej zmiennej z zaawansowanej wersji systemu
+            state.procedury = dedupeProcedures(loaded);
+            buildProcedureAliases();
+            log(`Pobrano ${state.procedury.length} procedur do pamięci.`);
+        }
+
+        async function init() {
+            log("Inicjalizacja systemu bazowego...");
+            
+            // Wywołujemy zaktualizowaną funkcję pobierania
+            await loadProcedures();
+
+            if (state.procedury.length > 0) {
+                setMicEnabled(true);
+                log("SYSTEM GOTOWY DO PRACY.");
+            } else {
+                log("BŁĄD KRYTYCZNY: Nie udało się pobrać żadnych procedur!", true);
+            }
+        }
 
             if (PROCEDURY.length > 0) {
                 API_KEY = prompt("Wklej API Key (z Twojego panelu):")?.trim();
