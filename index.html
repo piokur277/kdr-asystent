@@ -1309,25 +1309,44 @@
         }
 
     async function init() {
-            log("Pobieranie procedur z GitHub...");
+            log("Rozpoczynam diagnostykę bazy...");
             for (const f of PLIKI) {
                 try {
-                    // Czysty fetch, bez żadnych nagłówków - omija blokady bezpieczeństwa GitHub Pages
                     const r = await fetch(`${f}?v=${Date.now()}`);
-                    if (r.ok) {
-                        // Pobieramy surowe dane (bajty) i ręcznie wymuszamy poprawne polskie znaki UTF-8
-                        const buffer = await r.arrayBuffer();
-                        const text = new TextDecoder('utf-8').decode(buffer);
-                        
-                        PROCEDURY.push(JSON.parse(text));
-                        log(`Wczytano: ${f}`);
-                    } else {
-                        log(`Błąd pliku ${f}: ${r.status}`, true);
+                    if (!r.ok) {
+                        log(`[BLAD SERWERA ${r.status}] ${f}`, true);
+                        continue;
                     }
+                    
+                    const text = await r.text(); // Pobieramy czysty tekst
+                    
+                    try {
+                        const json = JSON.parse(text); // Próbujemy złożyć z tego JSON
+                        PROCEDURY.push(json);
+                        log(`Wczytano OK: ${f}`);
+                    } catch(parseErr) {
+                        // KLUCZOWE: Jeśli zepsułeś plik na GitHubie, to nam o tym powie!
+                        log(`[ZŁY FORMAT JSON] ${f}: ${parseErr.message}`, true);
+                    }
+
                 } catch (e) { 
-                    log(`Błąd sieci pliku: ${f}`, true); 
+                    // To pokaże prawdziwy błąd połączenia, jeśli taki istnieje
+                    log(`[BLAD SIECI] ${f}: ${e.message}`, true); 
                 }
             }
+
+            if (PROCEDURY.length > 0) {
+                API_KEY = prompt("Wklej API Key (z Twojego panelu):")?.trim();
+                const mic = document.getElementById('mic-btn');
+                if(mic) {
+                    mic.disabled = false;
+                    mic.classList.replace('text-slate-400', 'text-white');
+                }
+                log(`SYSTEM GOTOWY. Pomyślnie załadowano: ${PROCEDURY.length}`);
+            } else {
+                log("BŁĄD KRYTYCZNY: Nie załadowano ani jednej procedury!", true);
+            }
+        }
 
             if (PROCEDURY.length > 0) {
                 API_KEY = prompt("Wklej API Key (z Twojego panelu):")?.trim();
