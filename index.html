@@ -1308,92 +1308,21 @@
             procedureScrollArea.scrollTop = 0;
         }
 
-    async function loadProcedures() {
-            log("Pobieranie najnowszych procedur z GitHuba...");
-            const loaded = [];
-            
-            for (const file of PLIKI) {
-                try {
-                    // Czysty fetch omijający pamięć podręczną, bez blokujących nagłówków
-                    const response = await fetch(`${file}?v=${Date.now()}`, { cache: "no-store" });
-                    
-                    if (!response.ok) {
-                        log(`Nie znaleziono pliku: ${file}`, true);
-                        continue;
-                    }
-                    
-                    // KLUCZOWE: Wymuszenie UTF-8 na poziomie odczytu bajtów dla polskich znaków
-                    const buffer = await response.arrayBuffer();
-                    const text = new TextDecoder('utf-8').decode(buffer);
-                    const json = JSON.parse(text);
-                    
-                    if (validateProcedure(json)) {
-                        loaded.push(json);
-                    }
-                } catch (error) {
-                    log(`Błąd pliku ${file}: Zły format JSON lub błąd sieci`, true);
-                }
-            }
-            
-            // Zapis do prawidłowej zmiennej z zaawansowanej wersji systemu
-            state.procedury = dedupeProcedures(loaded);
-            buildProcedureAliases();
-            log(`Pobrano ${state.procedury.length} procedur do pamięci.`);
-        }
-
         async function init() {
-            log("Inicjalizacja systemu bazowego...");
-            
-            // Wywołujemy zaktualizowaną funkcję pobierania
+            if (!SHOW_INFO_LOGS && debugConsole) {
+                debugConsole.classList.add("hidden");
+                debugConsole.innerHTML = "";
+            }
             await loadProcedures();
-
-            if (state.procedury.length > 0) {
-                setMicEnabled(true);
-                log("SYSTEM GOTOWY DO PRACY.");
-            } else {
-                log("BŁĄD KRYTYCZNY: Nie udało się pobrać żadnych procedur!", true);
-            }
-        }
-
-            if (PROCEDURY.length > 0) {
-                API_KEY = prompt("Wklej API Key (z Twojego panelu):")?.trim();
-                const mic = document.getElementById('mic-btn');
-                if(mic) {
-                    mic.disabled = false;
-                    mic.classList.replace('text-slate-400', 'text-white');
-                }
-                log(`SYSTEM GOTOWY. Pomyślnie załadowano: ${PROCEDURY.length}`);
-            } else {
-                log("BŁĄD KRYTYCZNY: Nie załadowano ani jednej procedury!", true);
-            }
-        }
-
-            if (PROCEDURY.length > 0) {
-                API_KEY = prompt("Wklej API Key (z Twojego panelu):")?.trim();
-                const mic = document.getElementById('mic-btn');
-                if(mic) {
-                    mic.disabled = false;
-                    mic.classList.replace('text-slate-400', 'text-white');
-                }
-                log("SYSTEM GOTOWY DO PRACY.");
-            }
-        }
-
-    if (PROCEDURY.length > 0) {
-        API_KEY = prompt("Wklej API Key (z Twojego panelu):")?.trim();
-        const mic = document.getElementById('mic-btn');
-        mic.disabled = false;
-        mic.classList.replace('text-slate-400', 'text-white');
-        log("SYSTEM GOTOWY DO PRACY.");
-    }
-}
-
-            if (PROCEDURY.length > 0) {
-                API_KEY = prompt("Wklej API Key (z Twojego panelu):")?.trim();
-                const mic = document.getElementById('mic-btn');
-                mic.disabled = false;
-                mic.classList.replace('text-slate-400', 'text-white');
-                log("SYSTEM GOTOWY DO PRACY.");
+            updateApiButton();
+            updateInstallButton();
+            renderEmptyState("Oczekiwanie na rozkaz");
+            setMicEnabled(true);
+            log("Gotowosc bojowa.");
+            if (IS_IOS) log("Tryb iOS aktywny.");
+            if (IS_STANDALONE) log("Tryb PWA aktywny.");
+            if (!window.isSecureContext && location.protocol !== "file:") {
+                log("Uwaga: mikrofon wymaga HTTPS lub localhost.", true);
             }
         }
 
