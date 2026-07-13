@@ -898,6 +898,28 @@
         }
 
         async function loadProcedures() {
+            const fallback = await loadFallbackProcedures();
+            if (fallback.length > 0) {
+                state.procedury = dedupeProcedures(fallback);
+                buildProcedureAliases();
+                log(`Zaladowano ${state.procedury.length} procedur (baza.json).`);
+                return;
+            }
+
+            const loaded = [];
+            for (const file of PLIKI) {
+                try {
+                    const response = await fetch(`${file}?v=${Date.now()}`, { cache: "no-store" });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const json = await response.json();
+                    if (validateProcedure(json)) loaded.push(json);
+                } catch (error) {
+                    log(`Plik ${file} niedostepny lub zablokowany.`);
+                }
+            }
+       
+
+        async function loadProcedures() {
             log("Pobieranie najnowszych procedur z GitHuba...");
             const loaded = [];
             
