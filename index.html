@@ -889,7 +889,7 @@
             buildProcedureAliases();
             log(`Pobrano ${state.procedury.length} procedur do pamięci.`);
         }
-async function loadFallbackProcedures() {
+ async function loadFallbackProcedures() {
             try {
                 const response = await fetch(`${FALLBACK_URL}?v=${Date.now()}`, { cache: "no-store" });
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -904,20 +904,16 @@ async function loadFallbackProcedures() {
         async function loadProcedures() {
             log("Pobieranie najnowszych procedur z GitHuba...");
             const loaded = [];
-            
             for (const file of PLIKI) {
                 try {
                     const response = await fetch(`${file}?v=${Date.now()}`, { cache: "no-store" });
-                    
                     if (!response.ok) {
                         log(`Nie znaleziono pliku: ${file}`, true);
                         continue;
                     }
-                    
                     const buffer = await response.arrayBuffer();
                     const text = new TextDecoder('utf-8').decode(buffer);
                     const json = JSON.parse(text);
-                    
                     if (validateProcedure(json)) {
                         loaded.push(json);
                     }
