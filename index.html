@@ -883,83 +883,48 @@
             state.aliasById = aliasById;
             state.aliasToProcedureId = aliasToProcedureId;
         }
- async function getProcedureFileList() {
-            try {
-                const manifest = await fetchJsonFile(MANIFEST_URL);
-                const files = Array.isArray(manifest)
-                    ? manifest
-                    : manifest?.files;
-
-                if (Array.isArray(files) && files.length) {
-                    return [...new Set(
-                        files.filter(file =>
-                            typeof file === "string" &&
-                            file.endsWith(".json") &&
-                            !file.endsWith("/baza.json") &&
-                            !file.endsWith("/manifest.json")
-                        )
-                    )];
-                }
-            } catch (error) {
-                log("Nie udalo sie pobrac manifestu procedur.", true);
-            }
-
-            return [...new Set(PLIKI)];
-        }
-        async function loadProcedureFiles(files, concurrency = FILE_LOAD_CONCURRENCY) {
-            const uniqueFiles = [...new Set(
-                (files || []).filter(file => typeof file === "string" && file.trim())
-            )];
-
-            if (!uniqueFiles.length) return [];
-
-            const results = new Array(uniqueFiles.length);
-            let nextIndex = 0;
-            const version = Date.now();
-
-            async function worker() {
-                while (true) {
-                    const currentIndex = nextIndex;
-                    nextIndex += 1;
-
-                    if (currentIndex >= uniqueFiles.length) return;
-
-                    const file = uniqueFiles[currentIndex];
-
-                    try {
-                        const separator = file.includes("?") ? "&" : "?";
-                        const response = await fetch(
-                            `${file}${separator}v=${version}`,
-                            { cache: "no-store" }
-                        );
-
-                        if (!response.ok) {
-                            log(`Nie znaleziono pliku: ${file}`, true);
-                            continue;
-                        }
-
-                        const json = await response.json();
-
-                        if (!validateProcedure(json)) {
-                            log(`Nieprawidlowa struktura pliku: ${file}`, true);
-                            continue;
-                        }
-
-                        results[currentIndex] = json;
-                    } catch (error) {
-                        log(
-                            `Blad pliku ${file}: ${error.message || "blad sieci lub JSON"}`,
-                            true
-                        );
-                    }
-                }
-            }
+ 
             
             state.procedury = dedupeProcedures(loaded);
             buildProcedureAliases();
             log(`Pobrano ${state.procedury.length} procedur do pamięci.`);
         }
-
+async function loadFallbackProcedures() {
+            try {
+                const response = await fetch(`${FALLBACK_URL}?v=${Date.now()}`, { cache: "no-store" });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const json = await response.json();
+                if (Array.isArray(json)) return json.filter(validateProcedure);
+                return [];
+            } catch (error) {
+                log("Nie udalo sie wczytac procedury/baza.json.", true);
+                return [];
+            }
+        }
+        async function loadProcedures() {
+            log("Pobieranie najnowszych procedur z GitHuba...");
+            const loaded = [];
+            
+            for (const file of PLIKI) {
+                try {
+                    const response = await fetch(`${file}?v=${Date.now()}`, { cache: "no-store" });
+                    
+                    if (!response.ok) {
+                        log(`Nie znaleziono pliku: ${file}`, true);
+                        continue;
+                    }
+                    
+                    const buffer = await response.arrayBuffer();
+                    const text = new TextDecoder('utf-8').decode(buffer);
+                    const json = JSON.parse(text);
+                    
+                    if (validateProcedure(json)) {
+                        loaded.push(json);
+                    }
+                } catch (error) {
+                    log(`Błąd pliku ${file}: Zły format JSON lub błąd sieci`, true);
+                }
+            }
         async function init() {
             log("Inicjalizacja systemu bazowego...");
             await loadProcedures();
